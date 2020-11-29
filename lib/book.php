@@ -10,6 +10,7 @@ class BookClass
     public $publisher=NULL;
     public $language=NULL;
     public $identifier=NULL;
+    public $genres=NULL;
     private $dbh;
     function __construct($dbh,$bookId) {
         try{
@@ -26,7 +27,7 @@ class BookClass
             $sth->execute();
             $result = $sth->fetch(PDO::FETCH_ASSOC);
             
-            $this->$bookId=$bookId; 
+            $this->bookId=$bookId; 
             $this->Title=$result['Title']; 
             $this->description=$result['description']; 
             $this->creatorLastName=$result['LastName']; 
@@ -36,12 +37,35 @@ class BookClass
             $this->language=$result['language']; 
             $this->identifier=$result['identifier']; 
             $sth = null;
+            $this->genres = $this->getgenres();
         } catch (PDOException $e) {
             print "Error!: " . $e->getMessage() . "<br/>";
             die();
         }
     }
-
+    function getgenres()
+    {
+        try{
+            $dbh = $this->dbh;
+            $bookId = $this->bookId;
+            $stmt = $dbh->prepare("SELECT name FROM itemGenres 
+                                    LEFT JOIN genres on itemGenres.genresId = genres.genresId
+                                    WHERE bookId = :bookId");
+            $stmt->bindValue(':bookId', $bookId, PDO::PARAM_INT);
+            $stmt->execute();
+            $data=[];
+            while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT)) {
+                $data[] = $row[0];
+            }
+            $stmt = null;
+            return $data;
+        } catch (PDOException $e) {
+            print "Error!: " . $e->getMessage() . "<br/>";
+            die();
+        }
+    }
 }
+
+
 
 ?>

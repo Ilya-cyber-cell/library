@@ -7,7 +7,7 @@ $user=new UserClass($dbh,"ivanov",0);
 print ($user->lastName);
 print_r($user->getRights());
 print ("<br>");
-$book=new BookClass($dbh,66541);
+$book=new BookClass($dbh,66548 	);
 print_r($book);
 
 ?>
