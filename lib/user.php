@@ -8,10 +8,11 @@ class UserClass
     public $roleId=NULL;
     public $roleName=NULL;
     public $userId=NULL;
+    public $rights=NULL;
     private $dbh;
     function __construct($dbh,$login,$byId=0) {
+        $this->dbh = $dbh;
         try{
-            $this->dbh = $dbh;
             if ($byId ==0){
                 $sth = $dbh->prepare("SELECT userId,login, lastName, firstName, midleName, users.roleId as roleId, roles.name as roleName
                                         FROM users
@@ -40,9 +41,9 @@ class UserClass
             print "Error!: " . $e->getMessage() . "<br/>";
             die();
         }
+        $this->rights=$this->getRights();
     }
-    function getRights()
-    {
+    function getRights()    {
         try{
             $dbh = $this->dbh;
             $roleId = $this->roleId;
@@ -55,6 +56,23 @@ class UserClass
             }
             $stmt = null;
             return $data;
+        } catch (PDOException $e) {
+            print "Error!: " . $e->getMessage() . "<br/>";
+            die();
+        }
+    }
+    function save()
+    {
+        if ($this->userId == NULL){
+            print("new");
+        }else{
+            print("edit");
+        }
+        try{
+#            $dbh = $this->dbh;
+#            $stmt = $dbh->prepare($query);
+#            $stmt->bindValue(':roleId', $roleId, PDO::PARAM_INT);
+#            $stmt->execute();
         } catch (PDOException $e) {
             print "Error!: " . $e->getMessage() . "<br/>";
             die();

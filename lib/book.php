@@ -6,11 +6,12 @@ class BookClass
     public $description=NULL;
     public $creatorLastName=NULL;
     public $creatorFirstName=NULL;
-    public $creatormidleName=NULL;
+    public $creatorMidleName=NULL;
     public $publisher=NULL;
     public $language=NULL;
     public $identifier=NULL;
     public $genres=NULL;
+    public $availability=NULL;
     private $dbh;
     function __construct($dbh,$bookId) {
         try{
@@ -37,13 +38,14 @@ class BookClass
             $this->language=$result['language']; 
             $this->identifier=$result['identifier']; 
             $sth = null;
-            $this->genres = $this->getgenres();
         } catch (PDOException $e) {
             print "Error!: " . $e->getMessage() . "<br/>";
             die();
         }
+        $this->genres = $this->getGenres();
+        $this->availability = $this->getAvailability();
     }
-    function getgenres()
+    function getGenres()
     {
         try{
             $dbh = $this->dbh;
@@ -64,6 +66,26 @@ class BookClass
             die();
         }
     }
+    function getAvailability()
+    {
+        try{
+            $dbh = $this->dbh;
+            $bookId = $this->bookId;
+            $stmt = $dbh->prepare("SELECT inventoryId,state,expireDate,location FROM inventory 
+                                    WHERE bookId = :bookId");
+            $stmt->bindValue(':bookId', $bookId, PDO::PARAM_INT);
+            $stmt->execute();
+            $data=[];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_NEXT)) {
+                $data[] = $row;
+            }
+            $stmt = null;
+            return $data;
+        } catch (PDOException $e) {
+            print "Error!: " . $e->getMessage() . "<br/>";
+            die();
+        }
+    }    
 }
 
 

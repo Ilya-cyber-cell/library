@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv=Content-Type content="text/html;charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/x-template" id="item-template">
+      <li>
+        <div
+          :class="{bold: isFolder}"
+          @click="toggle">
+          {{ item.name }}
+          <span v-if="isFolder">[{{ isOpen ? '-' : '+' }}]</span>
+        </div>
+        <ul v-show="isOpen" v-if="isFolder">
+          <tree-item
+            class="item"
+            v-for="(child, index) in item.children"
+            :key="index"
+            :item="child"
+          ></tree-item>
+        </ul>
+      </li>
+    </script>    
+</head>
+<body>
+<body>
+<div id="top" class="topPanel">
+Шапка
+</div>
+<div class="wrapper">
+    <div id="left" class="leftPanel">
+        Левая панель
+        <ul id="creators">
+            <tree-item
+                class="item"
+                v-for="(child, index) in treeData"
+                   :item="child"
+            ></tree-item>
+        </ul>
+        </div>
+    <div id="top" class="searchPanel">
+        результат поиска
+    </div>
+</div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="script.js">
+</script>
+</html>

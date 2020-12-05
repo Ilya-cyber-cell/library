@@ -1,0 +1,97 @@
+.topPanel{
+    background:#f0f0f0;
+    height:100px;
+    border-color: #e3ecff; 
+    border-style: solid;
+    
+}
+.wrapper {
+    height: 100%;
+    border-color: #0000ff; 
+    border-style: solid;   
+}
+.leftPanel{
+    background:#f0f000;
+    float: left;
+    width:300px;
+    border-color: #e3ecff; 
+    border-style: solid;   
+    }
+.searchPanel{
+    background:#f010f0;
+    border-color: #e3ecff; 
+    border-style: solid;   
+}
+
+
+
+.error {
+   color: red; 
+   font-weight: bold; 
+}
+.parentDiv{
+    text-align: center;
+    padding: 10px;
+}
+.newCommentForm{
+    margin: auto;
+    background:#f5f5f5;
+    padding: 10px;
+    width: 600px; 
+}
+.newCommentForm label{
+    text-align:left;
+    width:250px;
+    margin-top:3px;
+    float:left;
+    padding:0px;
+}
+.newCommentForm input{
+    width:300px;
+    padding:0px;
+}
+.newCommentForm textarea{
+    width:310px;
+    padding:0px;
+}
+.Border{
+    border-color: #e3ecff; 
+    border-style: solid; 
+    max-width: 910px;
+    margin: auto;
+    border-width:1px;
+}
+
+.bodyComment{
+    margin: auto;
+    background:#f5f5f5;
+    padding: 10px;
+    position: relative;
+}
+.bodyComment img{
+    float: left;
+    max-width: 150px; 
+    
+}
+.bodyComment p{
+    text-align: Left;
+}
+.titleComents{
+    margin: auto;
+    background:#f0f0f0;
+    padding: 10px;
+    height: 20px;
+    position: relative;
+}
+.ComentName{
+    left: 20px;
+    position: absolute;
+}
+.ComentDate{
+    right: 50px;
+    position: absolute;    
+}
+.ComentDelete{
+    right: 20px;
+    position: absolute;    
+}
