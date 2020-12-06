@@ -1,5 +1,5 @@
 <?php
-class UserClass
+class UserClass extends APIClass
 {
     public $login=NULL;
     public $lastName=NULL;
@@ -10,11 +10,12 @@ class UserClass
     public $userId=NULL;
     public $rights=NULL;
     private $dbh;
+    private $pssHash;
     function __construct($dbh,$login,$byId=0) {
         $this->dbh = $dbh;
         try{
             if ($byId ==0){
-                $sth = $dbh->prepare("SELECT userId,login, lastName, firstName, midleName, users.roleId as roleId, roles.name as roleName
+                $sth = $dbh->prepare("SELECT userId,login, lastName, firstName, midleName, users.roleId as roleId, roles.name as roleName, password
                                         FROM users
                                         LEFT JOIN roles ON roles.roleId = users.roleId
                                         WHERE login = :login and deleted = 0");
@@ -36,10 +37,10 @@ class UserClass
             $this->midleName=$result['midleName']; 
             $this->roleId=$result['roleId']; 
             $this->roleName=$result['roleName']; 
+            $this->password=$result['password']; 
             $sth = null;
         } catch (PDOException $e) {
-            print "Error!: " . $e->getMessage() . "<br/>";
-            die();
+            return $this->toJson(1,$e->getMessage());
         }
         $this->rights=$this->getRights();
     }
@@ -57,8 +58,7 @@ class UserClass
             $stmt = null;
             return $data;
         } catch (PDOException $e) {
-            print "Error!: " . $e->getMessage() . "<br/>";
-            die();
+            return $this->toJson(1,$e->getMessage());
         }
     }
     function save()
@@ -74,8 +74,16 @@ class UserClass
 #            $stmt->bindValue(':roleId', $roleId, PDO::PARAM_INT);
 #            $stmt->execute();
         } catch (PDOException $e) {
-            print "Error!: " . $e->getMessage() . "<br/>";
-            die();
+            return $this->toJson(1,$e->getMessage());
+        }
+    }
+    function checkPassword($password){
+        if (password_verify($password, $this->password)) {
+            return $this->toJson(0,$this->rights);
+            $_SESSION['rights']=$this->rights;
+        } else {
+            return $this->toJson(1,"Пароль неправильный.");
+            unset ($_SESSION['rights']);
         }
     }
 }

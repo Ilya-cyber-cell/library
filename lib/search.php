@@ -38,7 +38,7 @@ class SearchClass extends APIClass
             return $this->toJson(1,$e->getMessage());
         }
     }    
-    function searchBook($creatorId){
+    function getBooks($creatorId){
         try{
             $dbh = $this->dbh;
             $stmt = $dbh->prepare("SELECT bookId, Title, description, creators.LastName as LastName, creators.FirstName as FirstName , creators.midleName as midleName

@@ -1,97 +1,117 @@
 .topPanel{
+    position: absolute;
     background:#f0f0f0;
+    left:0px;
+    top:0px;
+    right:0px;
     height:100px;
     border-color: #e3ecff; 
     border-style: solid;
     
 }
-.wrapper {
-    height: 100%;
-    border-color: #0000ff; 
-    border-style: solid;   
-}
 .leftPanel{
-    background:#f0f000;
-    float: left;
+    position: absolute; 
+    left:0px;
+    right:0px;
+    top:100px;
+    bottom:0px;    
     width:300px;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    background:#f3f390;
+    float: left;
     border-color: #e3ecff; 
-    border-style: solid;   
+    border-style: solid;  
+  
     }
 .searchPanel{
-    background:#f010f0;
+    position: absolute; 
+    left:300px;
+    right:0px;
+    top:100px;
+    bottom:0px;   
+    overflow-y:scroll;
+    overflow-x:hidden;
+    background:#FFFFFF;
     border-color: #e3ecff; 
     border-style: solid;   
 }
 
 
 
-.error {
-   color: red; 
-   font-weight: bold; 
-}
-.parentDiv{
-    text-align: center;
-    padding: 10px;
-}
-.newCommentForm{
+
+
+.loginPass{
     margin: auto;
-    background:#f5f5f5;
-    padding: 10px;
-    width: 600px; 
 }
-.newCommentForm label{
+
+.loginPass label{
     text-align:left;
-    width:250px;
+    width:120px;
     margin-top:3px;
     float:left;
     padding:0px;
 }
-.newCommentForm input{
-    width:300px;
+.loginPass input{
+    width:340px;
     padding:0px;
 }
-.newCommentForm textarea{
-    width:310px;
-    padding:0px;
-}
-.Border{
-    border-color: #e3ecff; 
-    border-style: solid; 
-    max-width: 910px;
-    margin: auto;
-    border-width:1px;
+/*
+ * Стили модального окна
+ */
+
+.modal-mask {
+  position: fixed;
+  z-index: 9998;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: table;
+  transition: opacity 0.3s ease;
 }
 
-.bodyComment{
-    margin: auto;
-    background:#f5f5f5;
-    padding: 10px;
-    position: relative;
+.modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
 }
-.bodyComment img{
-    float: left;
-    max-width: 150px; 
-    
+
+.modal-container {
+  width: 350px;
+  margin: 0px auto;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  transition: all 0.3s ease;
+  font-family: Helvetica, Arial, sans-serif;
 }
-.bodyComment p{
-    text-align: Left;
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #42b983;
 }
-.titleComents{
-    margin: auto;
-    background:#f0f0f0;
-    padding: 10px;
-    height: 20px;
-    position: relative;
+
+.modal-body {
+  margin: 20px 0;
 }
-.ComentName{
-    left: 20px;
-    position: absolute;
+
+.modal-default-button {
+  float: right;
 }
-.ComentDate{
-    right: 50px;
-    position: absolute;    
+
+.modal-enter {
+  opacity: 0;
 }
-.ComentDelete{
-    right: 20px;
-    position: absolute;    
+
+.modal-leave-active {
+  opacity: 0;
 }
+
+.modal-enter .modal-container,
+.modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+

@@ -1,5 +1,5 @@
 <?php
-class BookClass
+class BookClass extends APIClass
 {
     public $bookId=NULL;
     public $Title=NULL;
@@ -86,6 +86,9 @@ class BookClass
             die();
         }
     }    
+    function getBook(){
+        return $this->toJson(0,$this);
+    }
 }
 
 

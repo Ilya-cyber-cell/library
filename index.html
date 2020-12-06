@@ -21,14 +21,33 @@
         </ul>
       </li>
     </script>    
+    <script type="text/x-template" id="modal-template">
+      <transition name="modal">
+        <div class="modal-mask">
+          <div class="modal-wrapper">
+            <div class="modal-container">
+
+              <div class="modal-header">
+                <slot name="header">
+                </slot>
+              </div>
+              <div class="modal-body">
+                <slot name="body">
+                </slot>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </script>
 </head>
 <body>
 <body>
-<div id="top" class="topPanel">
-Шапка
-</div>
-<div class="wrapper">
-    <div id="left" class="leftPanel">
+    <div id="topPanel" class="topPanel">
+        Шапка
+        <button @click="openLoginFrom">Войти</button>
+    </div>
+    <div class="leftPanel">
         Левая панель
         <ul id="creators">
             <tree-item
@@ -38,11 +57,56 @@
             ></tree-item>
         </ul>
         </div>
-    <div id="top" class="searchPanel">
+    <div class="searchPanel">
         результат поиска
+        <div id="books">
+            <div v-for="book in books" >
+                <p><span @click="openBookFrom(book.bookId)"> {{ book.Title }} {{ book.LastName }} {{ book.FirstName }} {{ book.midleName }}</span></p>
+                <p><span> {{ book.description }} </span></p>
+            </div>
+        </div>
     </div>
-</div>
+ 
+    
 
+    <div id="loginForm" >
+        <modal v-if="showLoginWindow" @close="showLoginWindow = false" >
+        <template v-slot:header>
+            <h3>Введите логин пароль</h3>
+        </template>
+        <template v-slot:body>
+            <form v-on:submit.prevent="loginBtn">
+            <p class="loginPass"><label>login</label><input v-model="login"></p>
+            <p class="loginPass"><label>password</label><input v-model="password" type="password"></p>
+            <p> <button  @click="loginBtn">OK</button>
+                <button  @click="closeBtn">Звакрыть</button>
+            </p>
+            </form>
+        </template>
+        <template v-slot:footer>
+        </template>
+    </modal>
+   </div>
+   <div id="bookForm" >
+        <modal v-if="showLoginWindow" @close="showLoginWindow = false" >
+        <template v-slot:header>
+            <h3></h3>
+        </template>
+        <template v-slot:body>
+            <form v-on:submit.prevent="saveBtn">
+            <p class="loginPass"><label>title</label><input v-model="book.Title"></p>
+            <p> 
+                <button  @click="saveBtn">Звакрыть</button>
+                <button  @click="closeBtn">Звакрыть</button>
+            </p>
+            </form>
+        </template>
+        <template v-slot:footer>
+        </template>
+    </modal>
+   </div>
+    
+    
 </body>
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script src="script.js">
