@@ -3,6 +3,7 @@
 <head>
     <meta http-equiv=Content-Type content="text/html;charset=UTF-8">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.min.css">
     <script type="text/x-template" id="item-template">
       <li>
         <div
@@ -46,6 +47,7 @@
     <div id="topPanel" class="topPanel">
         Шапка
         <button @click="openLoginFrom">Войти</button>
+        <button @click="openUsersForm">edit</button>
     </div>
     <div class="leftPanel">
         Левая панель
@@ -76,39 +78,96 @@
         </template>
         <template v-slot:body>
             <form v-on:submit.prevent="loginBtn">
-            <p class="loginPass"><label>login</label><input v-model="login"></p>
-            <p class="loginPass"><label>password</label><input v-model="password" type="password"></p>
+            <p class="loginForm"><label>login</label><input v-model="login"></p>
+            <p class="loginForm"><label>password</label><input v-model="password" type="password"></p>
             <p> <button  @click="loginBtn">OK</button>
                 <button  @click="closeBtn">Звакрыть</button>
             </p>
             </form>
         </template>
-        <template v-slot:footer>
-        </template>
     </modal>
    </div>
    <div id="bookForm" >
-        <modal v-if="showLoginWindow" @close="showLoginWindow = false" >
+        <modal v-if="showWindow" @close="showWindow = false" >
         <template v-slot:header>
             <h3></h3>
         </template>
         <template v-slot:body>
             <form v-on:submit.prevent="saveBtn">
-            <p class="loginPass"><label>title</label><input v-model="book.Title"></p>
+            <p class="bookForm"><label>Название</label><input v-model="book.Title"></p>
+            <p class="bookForm"><label>Описание</label><textarea v-model="book.description"></textarea></p>
+            <p class="bookForm"><label>Издатель</label><input v-model="book.publisher"></p>
+            <p class="bookForm"><label>ISBN</label><input v-model="book.identifier"></p>
+            <p><select v-model="book.languageId">
+                <option v-for="option in AllLanguage" v-bind:value="option.id">
+                    {{ option.label }}
+                </option>
+               </select>
+            </p>  
+            <p><select v-model="book.typeId">
+                <option v-for="option in AllTypes" v-bind:value="option.id">
+                    {{ option.label }}
+                </option>
+               </select>
+            </p>
+            <p class="bookForm"><label>Жанры</label><treeselect v-model="book.genres" :multiple="true" :options="Allgenres" /></p>
             <p> 
-                <button  @click="saveBtn">Звакрыть</button>
-                <button  @click="closeBtn">Звакрыть</button>
+                <button  type="submit">Сохранить</button>
+                <button  type="button" @click="closeBtn">Отмена</button>
             </p>
             </form>
-        </template>
-        <template v-slot:footer>
+            <p v-for="AviableBook in AviableBooks" >
+                {{AviableBook.inventoryId}} {{AviableBook.state}}
+            </p>
         </template>
     </modal>
    </div>
-    
-    
+   <div id="usersForm" >
+        <modal v-if="showWindow" @close="showWindow = false" >
+        <template v-slot:header>
+            <h3></h3>
+        </template>
+        <template v-slot:body>
+            <button  @click="openUser(null)">Новый пользователь</button>
+            <div v-for="user in users" >
+                <p><span @click="openUser(user.userid)"> {{ user.login }} {{ user.lastName }} {{ user.firstName }} {{ user.midleName }} {{ user.roleName }}</span></p>
+                <button  @click="showWindow = false">Закрыть</button>
+            </div>
+        </template>
+    </modal>
+   </div>    
+    <div id="userForm" >
+        <modal v-if="showWindow" @close="showWindow = false" >
+        <template v-slot:header>
+            <h3></h3>
+        </template>
+        <template v-slot:body>
+        <form v-on:submit.prevent="saveBtn">
+            <p class="userForm"><label>Логин</label><input v-model="user.login"></p>
+            <p class="userForm"><label>Имя</label><input v-model="user.firstName"></p>
+            <p class="userForm"><label>Фамилия</label><input v-model="user.lastName"></p>
+            <p class="userForm"><label>Отчество</label><input v-model="user.midleName"></p>
+            <p><select v-model="user.roleId">
+                <option v-for="option in roles" v-bind:value="option.id">
+                    {{ option.name }}
+                </option>
+               </select>
+            </p>
+            <p class="userForm" v-bind:class="{ FieldWithError: passwordInvalide }"><label>Пароль</label><input v-model="user.password"></p>
+            <p class="userForm" v-bind:class="{ FieldWithError: passwordInvalide }"><label>Повтор пароля</label><input v-model="password"></p>
+            <p> 
+                <button  type="submit">Сохранить</button>
+                <button  type="button" @click="closeBtn">Отмена</button>
+            </p>
+            </form>
+        </template>
+    </modal>
+   </div> 
+ 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.umd.min.js"></script>
+
 <script src="script.js">
 </script>
 </html>

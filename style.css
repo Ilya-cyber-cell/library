@@ -39,21 +39,47 @@
 
 
 
+.FieldWithError{
+     border-color: #e30000;
+     border-style: solid; 
+}
 
-
-.loginPass{
+.loginForm{
     margin: auto;
 }
 
-.loginPass label{
+.loginForm label{
     text-align:left;
     width:120px;
     margin-top:3px;
     float:left;
     padding:0px;
 }
-.loginPass input{
+.loginForm input{
     width:340px;
+    padding:0px;
+}
+.bookForm{
+    margin: auto;
+}
+
+.bookForm label{
+    text-align:left;
+    width:120px;
+    margin-top:3px;
+    float:left;
+    padding:0px;
+}
+.bookForm input{
+    width:340px;
+    padding:0px;
+}
+.bookForm textarea{
+    width:354px;
+    max-width: 354px;
+    min-width: 354px; 
+    height:100px;
+    max-height: 300px;
     padding:0px;
 }
 /*

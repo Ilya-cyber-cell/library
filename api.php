@@ -13,16 +13,29 @@ if($request->{'module'} == "Search" ){
         print($search->getFirstLetter());
     }elseif($request->{'actons'} == 'getBooks'){
         print($search->getBooks($request->{'creatorId'}));
+    }elseif($request->{'actons'} == 'getUsers'){
+        print($search->getUsers());
     }
 }elseif($request->{'module'} == "User"){
+        $user=new UserClass($dbh);
     If($request->{'actons'} == 'login'){
-        $user=new UserClass($dbh,$request->{'login'},0);
+        $user->loadFromBd($request->{'login'},0);
         print($user->checkPassword($request->{'password'}));
+    }elseif($request->{'actons'} == 'getUser'){
+        $user->loadFromBd($request->{'userId'},1);
+        print($user->getUser("allRoles"));
+    }elseif($request->{'actons'} == 'save'){
+        $user->fromJson($request->{'user'});
+        print($user->Save());
     }
 }elseif($request->{'module'} == "Book"){
-    $book=new BookClass($dbh,$request->{'bookId'});
+    $book=new BookClass($dbh);
     if($request->{'actons'} == 'getBook'){
+        $book->loadFromBd($request->{'bookId'});
         print($book->getBook());
+    }elseif($request->{'actons'} == 'save'){
+        $book->fromJson($request->{'book'});
+        print($book->Save());
     }
 }
 ?>

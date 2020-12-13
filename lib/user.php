@@ -1,19 +1,20 @@
 <?php
 class UserClass extends APIClass
 {
-    public $login=NULL;
-    public $lastName=NULL;
-    public $firstName=NULL;
-    public $midleName=NULL;
-    public $roleId=NULL;
-    public $roleName=NULL;
-    public $userId=NULL;
-    public $rights=NULL;
-    private $dbh;
-    private $pssHash;
-    function __construct($dbh,$login,$byId=0) {
-        $this->dbh = $dbh;
+    public    $login=NULL;
+    public    $lastName=NULL;
+    public    $firstName=NULL;
+    public    $midleName=NULL;
+    public    $roleId=NULL;
+    public    $roleName=NULL;
+    public    $userId=NULL;
+    public    $rights=NULL;
+    public    $allRoles=NULL;
+    private   $passHash;
+    protected $password;
+    function loadFromBd($login,$byId=0) {
         try{
+            $dbh = $this->dbh;
             if ($byId ==0){
                 $sth = $dbh->prepare("SELECT userId,login, lastName, firstName, midleName, users.roleId as roleId, roles.name as roleName, password
                                         FROM users
@@ -21,7 +22,7 @@ class UserClass extends APIClass
                                         WHERE login = :login and deleted = 0");
                 $sth->bindValue(':login', $login, PDO::PARAM_STR);
             }else{
-                $sth = $dbh->prepare("SELECT userId,login, lastName, firstName, midleName, users.roleId as roleId, roles.name as roleName
+                $sth = $dbh->prepare("SELECT userId,login, lastName, firstName, midleName, users.roleId as roleId, roles.name as roleName, password
                                         FROM users
                                         LEFT JOIN roles ON roles.roleId = users.roleId
                                         WHERE userId = :userId");
@@ -37,7 +38,7 @@ class UserClass extends APIClass
             $this->midleName=$result['midleName']; 
             $this->roleId=$result['roleId']; 
             $this->roleName=$result['roleName']; 
-            $this->password=$result['password']; 
+            $this->passHash=$result['password']; 
             $sth = null;
         } catch (PDOException $e) {
             return $this->toJson(1,$e->getMessage());
@@ -61,30 +62,71 @@ class UserClass extends APIClass
             return $this->toJson(1,$e->getMessage());
         }
     }
+    function getAllRoles()    {
+        try{
+            $dbh = $this->dbh;
+            $roleId = $this->roleId;
+            $stmt = $dbh->prepare("SELECT roleid, name FROM roles");
+            $stmt->execute();
+            $data=[];
+            while ($row = $stmt->fetch(PDO::FETCH_NUM, PDO::FETCH_ORI_NEXT)) {
+                $data[] = array("name" => $row[1],"id" =>  $row[0] );
+            }
+            $stmt = null;
+            return $data;
+        } catch (PDOException $e) {
+            return $this->toJson(1,$e->getMessage());
+        }
+    }    
     function save()
     {
-        if ($this->userId == NULL){
-            print("new");
+        if ($this->password == "" or $this->password == NULL){
+            $password = "";
         }else{
-            print("edit");
+            $password = ",password =:password";
+        }
+        if ($this->userId == NULL){
+            $query="INSERT INTO users(login,lastName,firstName,midleName,roleId,password,deleted)
+                                    VALUES(:login,:lastName,:firstName,:midleName,:roleId,:password,0)";
+        }else{
+            $query="UPDATE users SET login = :login, lastName = :lastName,firstName = :firstName, midleName = :midleName,roleId = :roleId  $password
+                    WHERE userId = :userId ";
         }
         try{
-#            $dbh = $this->dbh;
-#            $stmt = $dbh->prepare($query);
-#            $stmt->bindValue(':roleId', $roleId, PDO::PARAM_INT);
-#            $stmt->execute();
+            $dbh = $this->dbh;
+            $stmt = $dbh->prepare($query);
+            $stmt->bindValue(':roleId',    $this->roleId,   PDO::PARAM_INT);
+            $stmt->bindValue(':login',     $this->login,    PDO::PARAM_STR);
+            $stmt->bindValue(':lastName',  $this->lastName, PDO::PARAM_STR);
+            $stmt->bindValue(':firstName', $this->firstName,PDO::PARAM_STR);
+            $stmt->bindValue(':midleName', $this->midleName,PDO::PARAM_STR);
+            if ($this->userId != NULL){
+                $stmt->bindValue(':userId',    $this->userId,   PDO::PARAM_INT);
+            }
+            if($password != ""){
+                $stmt->bindValue(':password',  password_hash($this->password,PASSWORD_BCRYPT),PDO::PARAM_STR);
+            }
+            $stmt->execute();
+            return $this->toJson(0,"ok");
         } catch (PDOException $e) {
             return $this->toJson(1,$e->getMessage());
         }
     }
     function checkPassword($password){
-        if (password_verify($password, $this->password)) {
+        if (password_verify($password, $this->passHash)) {
             return $this->toJson(0,$this->rights);
             $_SESSION['rights']=$this->rights;
         } else {
             return $this->toJson(1,"Пароль неправильный.");
             unset ($_SESSION['rights']);
         }
+    }
+    function getUser($param=""){
+        $allRoles="";
+        if ($param =="allRoles"){
+            $allRoles=$this->getAllRoles();
+        }
+        return $this->toJson(0,array("user"=>$this,"roles"=>$allRoles));
     }
 }
 

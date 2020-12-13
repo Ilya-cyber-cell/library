@@ -42,15 +42,17 @@ Vue.component("tree-item", {
 Vue.component("modal", {
     template: "#modal-template"
 });
-
+Vue.component('treeselect', VueTreeselect.Treeselect)
 
 var topPanel = new Vue({
     el: "#topPanel",
     methods:{
         openLoginFrom:function() {
-            console.log('Fetch Error');
             loginForm.openLoginFrom();
-        }        
+        }, 
+        openUsersForm:function() {
+            usersForm.openFrom();
+        },
     }
     
 });
@@ -89,16 +91,23 @@ var loginForm = new Vue({
 var bookForm = new Vue({
     el: "#bookForm",
     data: {
-        showLoginWindow: false,
+        showWindow: false,
         book:{},
-        title:'test'
+        Allgenres:[],
+        AllLanguage:[],
+        AllTypes:[],
+        AviableBooks:[]
     },methods:{
         openBookFrom:function(bookId) {
             let jsonData = {"actons":"getBook","module":"Book","bookId":bookId};
             apiRequest(jsonData).then(data =>{
             if(data.error==0) {
-                    this.book=data.content;
-                    this.showLoginWindow = true;
+                    this.book=data.content.book;
+                    this.Allgenres = data.content.Allgenres;
+                    this.AllLanguage = data.content.AllLanguage;
+                    this.AllTypes = data.content.AllTypes;
+                    this.AviableBooks = data.content.AviableBooks;
+                    this.showWindow = true;
                 }else{
                     console.log(data.content)
                 }
@@ -107,14 +116,95 @@ var bookForm = new Vue({
             }); 
         },
         saveBtn:function() {
-            this.showLoginWindow = false;
+            console.log(this.book.genres);
+            let jsonData = {"actons":"save","module":"Book","book":this.book};
+            apiRequest(jsonData).then(data =>{
+            if(data.error==0) {
+                    this.showWindow = false;
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            });
         },        
         closeBtn: function() {
-            this.showLoginWindow = false;
+            this.showWindow = false;
         }        
     }
 });
 
+var usersForm = new Vue({
+    el: "#usersForm",
+    data: {
+        showWindow: false,
+        users: []
+    },
+    methods: {
+        openFrom:function(bookId) {
+            let jsonData = {"actons":"getUsers","module":"Search"};
+            apiRequest(jsonData).then(data =>{
+            if(data.error==0) {
+                    this.users=data.content;
+                    this.showWindow = true;
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            }); 
+        },
+        openUser:function(userId) {
+            userForm.openForm(userId);       
+        }
+    }
+    
+})
+var userForm = new Vue({
+    el: "#userForm",
+    data: {
+        showWindow: false,
+        user:{},
+        password:"",
+        passwordInvalide:false,
+        roles:[]
+    },methods:{
+        openForm:function(userId) {
+            let jsonData = {"actons":"getUser","module":"User","userId":userId};
+            apiRequest(jsonData).then(data =>{
+            if(data.error==0) {
+                    this.user=data.content.user;
+                    this.roles=data.content.roles;
+                    this.showWindow = true;
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            }); 
+        },
+        saveBtn:function() {
+            if (this.password == this.user.password){    
+                this.passwordInvalide=false;
+                let jsonData = {"actons":"save","module":"User","user":this.user};
+                apiRequest(jsonData).then(data =>{
+                if(data.error==0) {
+                        this.showWindow = false;
+                    }else{
+                        console.log(data.content)
+                    }
+                }).catch(err => {
+                    console.log('Fetch Error', err);
+                });
+            }else{
+                this.passwordInvalide=true;
+            }
+        },        
+        closeBtn: function() {
+            this.showWindow = false;
+        }        
+    }
+});
 
 var creators = new Vue({
     el: "#creators",
