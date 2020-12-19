@@ -20,8 +20,7 @@ Vue.component("tree-item", {
             if (this.isOpen){
                 this._props.item.children=[{"name":"Загрузка.."}];
             } else{
-                let jsonData = {"actons":"getCreators","patern":this._props.item.name,"module":"Search"};
-                apiRequest(jsonData).then(data =>{
+                apiRequest('./api/creators.php/'+this._props.item.name,'GET').then(data =>{
                     if(data.error==0) {
                         this._props.item.children = data.content;
                     }else{
@@ -72,9 +71,10 @@ var loginForm = new Vue({
             this.showLoginWindow = false;
             let jsonData = {"actons":"login","module":"User","login":this.login,"password":this.password};
             this.password='';
-            apiRequest(jsonData).then(data =>{
+            apiRequest('./api/user.php','POST',jsonData).then(data =>{
                 if(data.error==0) {
                     console.log(data.content)
+                    errorWindow.Show(data.content)
                 }else{
                     console.log(data.content)
                 }
@@ -96,17 +96,18 @@ var bookForm = new Vue({
         Allgenres:[],
         AllLanguage:[],
         AllTypes:[],
-        AviableBooks:[]
+        AviableBooks:[],
+        AllPublishers:[]
     },methods:{
         openBookFrom:function(bookId) {
-            let jsonData = {"actons":"getBook","module":"Book","bookId":bookId};
-            apiRequest(jsonData).then(data =>{
+            apiRequest('./api/book.php/'+bookId,'GET').then(data =>{
             if(data.error==0) {
                     this.book=data.content.book;
                     this.Allgenres = data.content.Allgenres;
                     this.AllLanguage = data.content.AllLanguage;
                     this.AllTypes = data.content.AllTypes;
                     this.AviableBooks = data.content.AviableBooks;
+                    this.AllPublishers = data.content.AllPublishers;
                     this.showWindow = true;
                 }else{
                     console.log(data.content)
@@ -117,8 +118,8 @@ var bookForm = new Vue({
         },
         saveBtn:function() {
             console.log(this.book.genres);
-            let jsonData = {"actons":"save","module":"Book","book":this.book};
-            apiRequest(jsonData).then(data =>{
+//            let jsonData = {"actons":"save","module":"Book","book":this.book};
+            apiRequest('./api/book.php/','PUT',this.book).then(data =>{
             if(data.error==0) {
                     this.showWindow = false;
                 }else{
@@ -141,9 +142,8 @@ var usersForm = new Vue({
         users: []
     },
     methods: {
-        openFrom:function(bookId) {
-            let jsonData = {"actons":"getUsers","module":"Search"};
-            apiRequest(jsonData).then(data =>{
+        openFrom:function() {
+            apiRequest('./api/users.php','GET').then(data =>{
             if(data.error==0) {
                     this.users=data.content;
                     this.showWindow = true;
@@ -154,6 +154,17 @@ var usersForm = new Vue({
                 console.log('Fetch Error', err);
             }); 
         },
+        deleteUser:function(userId) {
+            apiRequest('./api/user.php/'+userId,'DELETE').then(data =>{
+            if(data.error==0) {
+                    this.openFrom();
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            }); 
+        },        
         openUser:function(userId) {
             userForm.openForm(userId);       
         }
@@ -170,8 +181,7 @@ var userForm = new Vue({
         roles:[]
     },methods:{
         openForm:function(userId) {
-            let jsonData = {"actons":"getUser","module":"User","userId":userId};
-            apiRequest(jsonData).then(data =>{
+            apiRequest('./api/user.php/'+userId,'GET').then(data =>{
             if(data.error==0) {
                     this.user=data.content.user;
                     this.roles=data.content.roles;
@@ -186,8 +196,8 @@ var userForm = new Vue({
         saveBtn:function() {
             if (this.password == this.user.password){    
                 this.passwordInvalide=false;
-                let jsonData = {"actons":"save","module":"User","user":this.user};
-                apiRequest(jsonData).then(data =>{
+               
+                apiRequest('./api/user.php/'+this.user.userId,'PUT',this.user).then(data =>{
                 if(data.error==0) {
                         this.showWindow = false;
                     }else{
@@ -214,7 +224,7 @@ var creators = new Vue({
     methods: {
         loadAlphabet:function () {
             let jsonData = {"actons":"getFirstLetter","module":"Search"};
-            apiRequest(jsonData).then(data =>{
+            apiRequest('./api/creators.php/','GET').then(data =>{
                 if(data.error==0) {
                     data.content.forEach(item => {
                         this.treeData.push({name:item,children:[{"name":"Загрузка.."}]});
@@ -234,15 +244,15 @@ var creators = new Vue({
 var Books = new Vue({
     el: '#books',
     data:{
-        books:[]
+        books:[],
+        creatorId:0
     },
     methods:{
         load:function (creatorId) {
-            console.log(creatorId);
-            let jsonData = {"actons":"getBooks","creatorId":creatorId,"module":"Search"};
-            apiRequest(jsonData).then(data =>{
+            apiRequest('./api/books.php/'+creatorId,'GET').then(data =>{
                 if(data.error==0) {
                     this.books=data.content;
+                    this.creatorId = creatorId;
                 }else{
                     console.log(data.content)
                 }
@@ -250,6 +260,18 @@ var Books = new Vue({
                 console.log('Fetch Error', err);
             });
         },
+        deleteBook:function (bookId) {
+            apiRequest('./api/book.php/'+bookId,'DELETE').then(data =>{
+                if(data.error==0) {
+                    this.load(this.creatorId);
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            });
+        },
+        
         openBookFrom:function (bookId) {
             bookForm.openBookFrom(bookId);
         }
@@ -258,16 +280,46 @@ var Books = new Vue({
 })
 
 
+var errorWindow = new Vue({
+    el: "#errorWindow",
+    data: {
+        showWindow: false,
+        text: ""
+    },methods:{
+        Show:function(message) {
+            this.text = message;
+            this.showWindow = true;
+        },
+        CloseWindow: function() {
+            this.showWindow = false;
+        }        
+    }
+});
+
+
+
+
 //Функция для работы с апи. Возвращает Promise 
-function apiRequest(jsonData){
-    postData = new FormData()
-    postData.append('json', JSON.stringify(jsonData))
-    return fetch('./api.php',{
-        method: 'POST',
-        cache: 'no-cache',
-        credentials: "same-origin",
-        body: postData
-    })
+function apiRequest(url,method='POST',jsonData=null){
+     console.log(url)
+    let param;
+    if (jsonData == null){
+        param ={
+            method: method,
+            cache: 'no-cache',
+            credentials: "same-origin"
+        }
+    }else{
+        postData = new FormData()
+        postData.append('json', JSON.stringify(jsonData))          
+        param ={
+            method: method,
+            cache: 'no-cache',
+            credentials: "same-origin",
+            body: postData
+        }
+    }
+    return fetch(url,param)
     .then(status)
     .then(json)
 }

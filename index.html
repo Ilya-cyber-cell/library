@@ -63,7 +63,10 @@
         результат поиска
         <div id="books">
             <div v-for="book in books" >
-                <p><span @click="openBookFrom(book.bookId)"> {{ book.Title }} {{ book.LastName }} {{ book.FirstName }} {{ book.midleName }}</span></p>
+                <p>
+                    <span @click="openBookFrom(book.bookId)"> {{ book.Title }} {{ book.LastName }} {{ book.FirstName }} {{ book.midleName }}</span>
+                    <img  @click="deleteBook(book.bookId)" src="img/trash-can_115312.svg" height="24" alt="Удалить">
+                </p>
                 <p><span> {{ book.description }} </span></p>
             </div>
         </div>
@@ -80,8 +83,8 @@
             <form v-on:submit.prevent="loginBtn">
             <p class="loginForm"><label>login</label><input v-model="login"></p>
             <p class="loginForm"><label>password</label><input v-model="password" type="password"></p>
-            <p> <button  @click="loginBtn">OK</button>
-                <button  @click="closeBtn">Звакрыть</button>
+            <p> <button type="submit">OK</button>
+                <button type="button"  @click="closeBtn">Звакрыть</button>
             </p>
             </form>
         </template>
@@ -97,6 +100,12 @@
             <p class="bookForm"><label>Название</label><input v-model="book.Title"></p>
             <p class="bookForm"><label>Описание</label><textarea v-model="book.description"></textarea></p>
             <p class="bookForm"><label>Издатель</label><input v-model="book.publisher"></p>
+            <p><select v-model="book.publisherId">
+                <option v-for="option in AllPublishers" v-bind:value="option.id">
+                    {{ option.label }}
+                </option>
+               </select>
+            </p>            
             <p class="bookForm"><label>ISBN</label><input v-model="book.identifier"></p>
             <p><select v-model="book.languageId">
                 <option v-for="option in AllLanguage" v-bind:value="option.id">
@@ -130,7 +139,10 @@
         <template v-slot:body>
             <button  @click="openUser(null)">Новый пользователь</button>
             <div v-for="user in users" >
-                <p><span @click="openUser(user.userid)"> {{ user.login }} {{ user.lastName }} {{ user.firstName }} {{ user.midleName }} {{ user.roleName }}</span></p>
+                <p>
+                <span @click="openUser(user.userid)"> {{ user.login }} {{ user.lastName }} {{ user.firstName }} {{ user.midleName }} {{ user.roleName }}</span>
+                <img  @click="deleteUser(user.userid)" src="img/trash-can_115312.svg" height="24" alt="Удалить">
+                </p>
                 <button  @click="showWindow = false">Закрыть</button>
             </div>
         </template>
@@ -163,6 +175,17 @@
         </template>
     </modal>
    </div> 
+   <div id="errorWindow" >
+        <modal v-if="showWindow" @close="showWindow = false" >
+        <template v-slot:header>
+            <h3>Ошибка</h3>
+        </template>
+        <template v-slot:body>
+            <p>{{ text }}<p>
+            <button  type="button" @click="CloseWindow">Закрыть</button>
+        </template>
+    </modal>   
+   <div>
  
 </body>
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>

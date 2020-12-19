@@ -1,4 +1,5 @@
 <?php
+require('./apiClass.php');
 class BookClass extends APIClass
 {
     public $bookId=NULL;
@@ -114,6 +115,7 @@ class BookClass extends APIClass
         }
         try{
             $dbh = $this->dbh;
+            $dbh->beginTransaction();
             $stmt = $dbh->prepare($query);
             $stmt->bindValue(':Title',     $this->Title,    PDO::PARAM_STR);
             $stmt->bindValue(':description',  $this->description, PDO::PARAM_STR);
@@ -126,6 +128,23 @@ class BookClass extends APIClass
                 $stmt->bindValue(':bookId',    $this->bookId,   PDO::PARAM_INT);
             }
             $stmt->execute();
+            if ($this->bookId == NULL){
+                $this->bookId =$dbh->lastInsertId();
+            }
+            $stmt = null;
+            $stmt = $dbh->prepare('DELETE FROM itemGenres WHERE bookId = :bookId');
+            $stmt->bindValue(':bookId',    $this->bookId,   PDO::PARAM_INT);
+            $stmt->execute();
+            $stmt = null;
+            foreach ($this->genres as $genre) {
+                $stmt = $dbh->prepare('INSERT INTO itemGenres(bookId,genresId)
+                                                    VALUES(:bookId,:genresId)');
+                $stmt->bindValue(':bookId',$this->bookId,   PDO::PARAM_INT);
+                $stmt->bindValue(':genresId', $genre,   PDO::PARAM_INT);
+                $stmt->execute();
+                $stmt = null;
+            }
+            $dbh->commit();
             return $this->toJson(0,"ok");
         } catch (PDOException $e) {
             return $this->toJson(1,$e->getMessage());
@@ -135,11 +154,40 @@ class BookClass extends APIClass
         $Allgenres=$this->getAllDirectoryEntry('genres');
         $AllLanguage=$this->getAllDirectoryEntry('languages');
         $AllTypes=$this->getAllDirectoryEntry('types');
+        $AllPublishers=$this->getAllDirectoryEntry('publishers');
         $AviableBooks=$this->getAvailability();
-        return $this->toJson(0,array("book"=>$this,"Allgenres"=>$Allgenres,"AllLanguage"=>$AllLanguage,"AllTypes"=>$AllTypes,"AviableBooks"=>$AviableBooks));
+        return $this->toJson(0,array("book"=>$this,"Allgenres"=>$Allgenres,"AllLanguage"=>$AllLanguage,"AllTypes"=>$AllTypes,"AviableBooks"=>$AviableBooks,"AllPublishers"=>$AllPublishers));
     }
+    function deleteBook($bookId)
+    {
+        $query="UPDATE books SET deleted = 1 WHERE bookId = :bookId ";
+        try{
+            $dbh = $this->dbh;
+            $stmt = $dbh->prepare($query);
+            $stmt->bindValue(':bookId', $bookId,   PDO::PARAM_INT);
+            $stmt->execute();
+            return $this->toJson(0,"ok");
+        } catch (PDOException $e) {
+            return $this->toJson(1,$e->getMessage());
+        }
+    }    
+}  
+$book=new BookClass($dbh);    
+switch ($method) {
+case 'PUT':  
+    $book->fromPostData();
+    print($book->Save());    
+    break;
+  case 'GET':
+    $book->loadFromBd($request[0],1);
+    print($book->getBook());
+    break;
+  case 'DELETE':
+    print($book->deleteBook($request[0]));
+    break;     
+  default:
+    var_dump($request);  
+    break;
 }
-
-
 
 ?>

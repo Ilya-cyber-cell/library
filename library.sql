@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost
--- Время создания: Ноя 29 2020 г., 11:28
+-- Время создания: Дек 19 2020 г., 11:34
 -- Версия сервера: 10.4.15-MariaDB
 -- Версия PHP: 7.3.25
 
@@ -59,7 +59,7 @@ CREATE TABLE `creators` (
 --
 
 CREATE TABLE `genres` (
-  `genresId` int(11) UNSIGNED NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `name` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -73,8 +73,8 @@ CREATE TABLE `inventory` (
   `inventoryId` int(10) UNSIGNED NOT NULL,
   `bookID` int(10) UNSIGNED NOT NULL,
   `state` enum('Выдана','Списана','Доступна','В резерве') NOT NULL,
-  `expireDate` date NOT NULL,
-  `location` int(10) UNSIGNED NOT NULL
+  `expireDate` date DEFAULT NULL,
+  `location` int(10) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -117,7 +117,7 @@ CREATE TABLE `languages` (
 --
 
 CREATE TABLE `publishers` (
-  `publisherId` int(11) UNSIGNED NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL,
   `name` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -154,8 +154,8 @@ CREATE TABLE `roles` (
 --
 
 CREATE TABLE `types` (
-  `typeId` int(11) UNSIGNED NOT NULL,
-  `name` int(11) NOT NULL
+  `id` int(11) UNSIGNED NOT NULL,
+  `name` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -171,6 +171,7 @@ CREATE TABLE `users` (
   `lastName` text NOT NULL,
   `firstName` text NOT NULL,
   `midleName` text NOT NULL,
+  `password` char(60) NOT NULL,
   `deleted` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -183,10 +184,10 @@ CREATE TABLE `users` (
 --
 ALTER TABLE `books`
   ADD PRIMARY KEY (`bookId`),
-  ADD KEY `books_types_fk` (`typeId`),
   ADD KEY `books_languages_fk` (`languageId`),
+  ADD KEY `books_creators_fk` (`creatorId`),
   ADD KEY `books_publishers_fk` (`publisherId`),
-  ADD KEY `books_creators_fk` (`creatorId`);
+  ADD KEY `books_types_fk` (`typeId`);
 
 --
 -- Индексы таблицы `creators`
@@ -198,7 +199,7 @@ ALTER TABLE `creators`
 -- Индексы таблицы `genres`
 --
 ALTER TABLE `genres`
-  ADD PRIMARY KEY (`genresId`) USING BTREE;
+  ADD PRIMARY KEY (`id`) USING BTREE;
 
 --
 -- Индексы таблицы `inventory`
@@ -212,8 +213,7 @@ ALTER TABLE `inventory`
 -- Индексы таблицы `itemGenres`
 --
 ALTER TABLE `itemGenres`
-  ADD KEY `itemGenres_books_fk` (`bookId`),
-  ADD KEY `itemGenres_genres_fk` (`genresId`);
+  ADD KEY `itemGenres_books_fk` (`bookId`);
 
 --
 -- Индексы таблицы `itemRights`
@@ -231,7 +231,7 @@ ALTER TABLE `languages`
 -- Индексы таблицы `publishers`
 --
 ALTER TABLE `publishers`
-  ADD PRIMARY KEY (`publisherId`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Индексы таблицы `registery`
@@ -249,7 +249,7 @@ ALTER TABLE `roles`
 -- Индексы таблицы `types`
 --
 ALTER TABLE `types`
-  ADD PRIMARY KEY (`typeId`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Индексы таблицы `users`
@@ -279,7 +279,7 @@ ALTER TABLE `creators`
 -- AUTO_INCREMENT для таблицы `genres`
 --
 ALTER TABLE `genres`
-  MODIFY `genresId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `inventory`
@@ -297,7 +297,7 @@ ALTER TABLE `languages`
 -- AUTO_INCREMENT для таблицы `publishers`
 --
 ALTER TABLE `publishers`
-  MODIFY `publisherId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `registery`
@@ -315,7 +315,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT для таблицы `types`
 --
 ALTER TABLE `types`
-  MODIFY `typeId` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `users`
@@ -333,8 +333,8 @@ ALTER TABLE `users`
 ALTER TABLE `books`
   ADD CONSTRAINT `books_creators_fk` FOREIGN KEY (`creatorId`) REFERENCES `creators` (`creatorId`) ON UPDATE CASCADE,
   ADD CONSTRAINT `books_languages_fk` FOREIGN KEY (`languageId`) REFERENCES `languages` (`id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `books_publishers_fk` FOREIGN KEY (`publisherId`) REFERENCES `publishers` (`publisherId`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `books_types_fk` FOREIGN KEY (`typeId`) REFERENCES `types` (`typeId`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `books_publishers_fk` FOREIGN KEY (`publisherId`) REFERENCES `publishers` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `books_types_fk` FOREIGN KEY (`typeId`) REFERENCES `types` (`id`) ON UPDATE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `inventory`
