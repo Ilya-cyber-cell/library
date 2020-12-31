@@ -65,22 +65,34 @@
 
 .bookForm label{
     text-align:left;
-    width:120px;
-    margin-top:3px;
+    width:100px;
+    margin-top:12px;
     float:left;
     padding:0px;
 }
+.bookForm {
+    padding-top: 5px;
+}
 .bookForm input{
-    width:340px;
+    width:580px;
+    padding:0px;
+}
+.bookForm select{
+    width:596px;
     padding:0px;
 }
 .bookForm textarea{
-    width:354px;
-    max-width: 354px;
+    width:594px;
+    max-width: 594px;
     min-width: 354px; 
     height:100px;
     max-height: 300px;
     padding:0px;
+}
+.AviableBook{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    max-height: 150px;
 }
 /*
  * Стили модального окна
@@ -104,7 +116,7 @@
 }
 
 .modal-container {
-  width: 350px;
+/*  width: 350px; */
   margin: 0px auto;
   padding: 20px 30px;
   background-color: #fff;
@@ -113,6 +125,23 @@
   transition: all 0.3s ease;
   font-family: Helvetica, Arial, sans-serif;
 }
+
+.modal-container-login {
+  width: 350px;
+}
+.modal-container-user {
+  width: 350px;
+}
+.modal-container-users {
+  width: 450px;
+}
+.modal-container-book {
+  width: 700px;
+}
+.modal-container-error {
+  width: 350px;
+}
+
 
 .modal-header h3 {
   margin-top: 0;

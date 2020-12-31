@@ -24,11 +24,24 @@ class APIClass
         }
 
     }
+    function checkRights($right,$msg="Нет прав для редактирования"){
+        $notAccess = true;
+        if (isset($_SESSION['rights'])){
+            foreach ($_SESSION['rights'] as $item) {
+                if ( $item == $right){
+                    $notAccess = false;
+                }
+            }
+        }
+        if ($notAccess){
+            print ($this->toJson(1,$msg));
+            die(0);
+        }        
+    }
     function parseRawData(){
         // Fetch content and determine boundary
         $raw_data = file_get_contents('php://input');
         $boundary = substr($raw_data, 0, strpos($raw_data, "\r\n"));
-
         // Fetch each part
         $parts = array_slice(explode($boundary, $raw_data), 1);
         $data = array();
@@ -77,6 +90,7 @@ class APIClass
         }    
         return $data;
     }
+
 }
 
 ?>

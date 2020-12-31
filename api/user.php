@@ -81,6 +81,7 @@ class UserClass extends APIClass
     }    
     function save()
     {
+        
         if ($this->password == "" or $this->password == NULL){
             $password = "";
         }else{
@@ -95,6 +96,18 @@ class UserClass extends APIClass
         }
         try{
             $dbh = $this->dbh;
+            $dbh->beginTransaction();
+            $stmt = $dbh->prepare("SELECT Count(userId) FROM users WHERE login = :login and deleted = 0");
+            $stmt->bindValue(':login',     $this->login,    PDO::PARAM_STR);
+            $stmt->execute();
+            $numberLogin=$stmt->fetchColumn();
+            $stmt = null;
+            if ($stmt>0){
+                $dbh->rollBack();
+                print ($this->toJson(1,"Такой логин уже есть."));
+                die(0);
+            }
+            
             $stmt = $dbh->prepare($query);
             $stmt->bindValue(':roleId',    $this->roleId,   PDO::PARAM_INT);
             $stmt->bindValue(':login',     $this->login,    PDO::PARAM_STR);
@@ -108,6 +121,7 @@ class UserClass extends APIClass
                 $stmt->bindValue(':password',  password_hash($this->password,PASSWORD_BCRYPT),PDO::PARAM_STR);
             }
             $stmt->execute();
+            $dbh->commit();
             return $this->toJson(0,"ok");
         } catch (PDOException $e) {
             return $this->toJson(1,$e->getMessage());
@@ -115,11 +129,13 @@ class UserClass extends APIClass
     }
     function checkPassword($password){
         if (password_verify($password, $this->passHash)) {
-            return $this->toJson(0,$this->rights);
             $_SESSION['rights']=$this->rights;
+            $_SESSION['userId']=$this->userId;
+            return $this->toJson(0,$this->rights);
         } else {
-            return $this->toJson(1,"Пароль неправильный.");
             unset ($_SESSION['rights']);
+            unset ($_SESSION['userId']);
+            return $this->toJson(1,"Пароль неправильный.");
         }
     }
     function getUser($param=""){
@@ -142,10 +158,12 @@ class UserClass extends APIClass
             return $this->toJson(1,$e->getMessage());
         }
     }
+
 }    
 $user=new UserClass($dbh);    
 switch ($method) {
 case 'PUT':  
+    $user->checkRights("userManagement");
     $user->fromPostData();
     print($user->Save());    
     break;
@@ -157,10 +175,12 @@ case 'PUT':
     }
     break;
   case 'GET':
+    $user->checkRights("userManagement");
     $user->loadFromBd($request[0],1);
     print($user->getUser("allRoles"));
     break;
   case 'DELETE':
+    $user->checkRights("userManagement");
     print($user->deleteUser($request[0]));
     break;    
   default:

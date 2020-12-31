@@ -26,7 +26,7 @@
       <transition name="modal">
         <div class="modal-mask">
           <div class="modal-wrapper">
-            <div class="modal-container">
+            <div class="modal-container" v-bind:class="addstyle">
 
               <div class="modal-header">
                 <slot name="header">
@@ -75,7 +75,7 @@
     
 
     <div id="loginForm" >
-        <modal v-if="showLoginWindow" @close="showLoginWindow = false" >
+        <modal v-if="showLoginWindow" @close="showLoginWindow = false" addstyle="modal-container-login">
         <template v-slot:header>
             <h3>Введите логин пароль</h3>
         </template>
@@ -91,48 +91,56 @@
     </modal>
    </div>
    <div id="bookForm" >
-        <modal v-if="showWindow" @close="showWindow = false" >
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-book">
         <template v-slot:header>
-            <h3></h3>
+            <h3>Редактирование описания книги</h3>
         </template>
         <template v-slot:body>
             <form v-on:submit.prevent="saveBtn">
             <p class="bookForm"><label>Название</label><input v-model="book.Title"></p>
             <p class="bookForm"><label>Описание</label><textarea v-model="book.description"></textarea></p>
-            <p class="bookForm"><label>Издатель</label><input v-model="book.publisher"></p>
-            <p><select v-model="book.publisherId">
+            <p class="bookForm"><label>Издатель</label>
+               <select v-model="book.publisherId">
                 <option v-for="option in AllPublishers" v-bind:value="option.id">
                     {{ option.label }}
                 </option>
                </select>
             </p>            
             <p class="bookForm"><label>ISBN</label><input v-model="book.identifier"></p>
-            <p><select v-model="book.languageId">
+            <p class="bookForm"><label>Язык</label>
+               <select v-model="book.languageId">
                 <option v-for="option in AllLanguage" v-bind:value="option.id">
                     {{ option.label }}
                 </option>
                </select>
             </p>  
-            <p><select v-model="book.typeId">
+            <p class="bookForm"><label>Тип издания</label>
+               <select v-model="book.typeId">
                 <option v-for="option in AllTypes" v-bind:value="option.id">
                     {{ option.label }}
                 </option>
                </select>
             </p>
-            <p class="bookForm"><label>Жанры</label><treeselect v-model="book.genres" :multiple="true" :options="Allgenres" /></p>
+            <p class="bookFormTreeselect"><label>Жанры</label><treeselect v-model="book.genres" :multiple="true" :options="Allgenres"  /></p>
             <p> 
                 <button  type="submit">Сохранить</button>
                 <button  type="button" @click="closeBtn">Отмена</button>
             </p>
             </form>
+            <div class="AviableBook">
+            Добавить экземпляр <img  @click="addCopy()" src="img/gui_add_icon_157253.svg" height="16" alt="Добавить">
             <p v-for="AviableBook in AviableBooks" >
-                {{AviableBook.inventoryId}} {{AviableBook.state}}
+                {{AviableBook.inventoryId}} {{AviableBook.location}}  {{AviableBook.expireDate}} {{AviableBook.expireDate}} {{AviableBook.state}}
+                <img  @click="handingIn(AviableBook.inventoryId)"  src="img/box-in-icon_34483.png"  height="16" alt="Принять">
+                <img  @click="handingOut(AviableBook.inventoryId)" src="img/box-out-icon_34482.png" height="16" alt="Выдать">
+                <img  @click="deleteCopy(AviableBook.inventoryId)" src="img/trash-can_115312.svg"   height="16" alt="Удалить">
             </p>
+            </div>
         </template>
     </modal>
    </div>
-   <div id="usersForm" >
-        <modal v-if="showWindow" @close="showWindow = false" >
+   <div id="usersForm">
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-users" >
         <template v-slot:header>
             <h3></h3>
         </template>
@@ -149,7 +157,7 @@
     </modal>
    </div>    
     <div id="userForm" >
-        <modal v-if="showWindow" @close="showWindow = false" >
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-user">
         <template v-slot:header>
             <h3></h3>
         </template>
@@ -175,8 +183,29 @@
         </template>
     </modal>
    </div> 
+   <div id="handingОutForm" >
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-error" >
+        <template v-slot:header>
+            <h3>Выдача книг</h3>
+        </template>
+        <template v-slot:body>
+             <form v-on:submit.prevent="saveBtn">
+             <p>
+                <treeselect v-model="selectedUser" :multiple="false" :disable-branch-nodes="true" :options="users"  />
+             </p>
+             <p>
+                <v-date-picker is-expanded v-model='selectedDate' />
+             </p>
+             <p> 
+                <button  type="submit">Сохранить</button>
+                <button  type="button" @click="closeBtn">Отмена</button>
+            </p>
+            </form>
+        </template>
+    </modal>   
+   </div>   
    <div id="errorWindow" >
-        <modal v-if="showWindow" @close="showWindow = false" >
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-error" >
         <template v-slot:header>
             <h3>Ошибка</h3>
         </template>
@@ -186,11 +215,9 @@
         </template>
     </modal>   
    <div>
- 
-</body>
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script src="https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.umd.min.js"></script>
-
-<script src="script.js">
-</script>
+<script src='https://unpkg.com/v-calendar'></script>
+<script src="script.js"></script>
+</body>
 </html>

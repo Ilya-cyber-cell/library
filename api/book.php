@@ -14,7 +14,6 @@ class BookClass extends APIClass
     public $typeId=NULL;
     public $identifier=NULL;
     public $genres=NULL;
-    public $availability=NULL;
     function loadFromBd($bookId) {
         try{
             $dbh = $this->dbh;
@@ -44,7 +43,6 @@ class BookClass extends APIClass
             die();
         }
         $this->genres = $this->getGenres();
-        $this->availability = $this->getAvailability();
     }
     function getGenres()
     {
@@ -89,8 +87,15 @@ class BookClass extends APIClass
         try{
             $dbh = $this->dbh;
             $bookId = $this->bookId;
-            $stmt = $dbh->prepare("SELECT inventoryId,state,expireDate,location FROM inventory 
-                                    WHERE bookId = :bookId");
+                                    
+            $stmt = $dbh->prepare("SELECT inventory.inventoryId  as inventoryId,state, expireDate,users.login as location
+                        FROM  registery 
+                        JOIN  inventory ON inventory.inventoryId = registery.inventoryId
+                        LEFT JOIN  users ON users.userId = registery.location
+                        WHERE registeryid IN (SELECT max(registeryid) FROM registery 
+                                    JOIN  inventory ON inventory.inventoryId = registery.inventoryId 
+                                    WHERE bookId = :bookId
+                                    GROUP BY inventory.inventoryId)");
             $stmt->bindValue(':bookId', $bookId, PDO::PARAM_INT);
             $stmt->execute();
             $data=[];
@@ -170,11 +175,12 @@ class BookClass extends APIClass
         } catch (PDOException $e) {
             return $this->toJson(1,$e->getMessage());
         }
-    }    
+    }
 }  
 $book=new BookClass($dbh);    
 switch ($method) {
 case 'PUT':  
+    $book->checkRights("editBook");
     $book->fromPostData();
     print($book->Save());    
     break;
@@ -183,6 +189,7 @@ case 'PUT':
     print($book->getBook());
     break;
   case 'DELETE':
+    $book->checkRights("deleteBook");
     print($book->deleteBook($request[0]));
     break;     
   default:

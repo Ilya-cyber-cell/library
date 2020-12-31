@@ -39,6 +39,7 @@ Vue.component("tree-item", {
     }
 });
 Vue.component("modal", {
+    props: ['addstyle'], 
     template: "#modal-template"
 });
 Vue.component('treeselect', VueTreeselect.Treeselect)
@@ -73,8 +74,8 @@ var loginForm = new Vue({
             this.password='';
             apiRequest('./api/user.php','POST',jsonData).then(data =>{
                 if(data.error==0) {
-                    console.log(data.content)
-                    errorWindow.Show(data.content)
+                    errorWindow.Show(data.content);
+                    console.log(data.content);
                 }else{
                     console.log(data.content)
                 }
@@ -131,7 +132,47 @@ var bookForm = new Vue({
         },        
         closeBtn: function() {
             this.showWindow = false;
-        }        
+        },
+        addCopy:function() {
+            apiRequest('./api/inventory.php/','PUT',{"bookId":this.book.bookId}).then(data =>{
+            if(data.error==0) {
+                    this.openBookFrom(this.book.bookId);
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            });
+        },
+        handingOut:function(inventoryId) {
+            handingОutForm.openForm(inventoryId);
+        },
+        handingIn:function(inventoryId) {
+            if(confirm("Принять экземпляр?")){
+                apiRequest('./api/inventory.php/'+inventoryId+'/In','POST').then(data =>{
+                if(data.error==0) {
+                        this.openBookFrom(this.book.bookId);
+                    }else{
+                        console.log(data.content)
+                    }
+                }).catch(err => {
+                    console.log('Fetch Error', err);
+                });
+            }
+        },       
+        deleteCopy:function(inventoryId) {
+            if(confirm("Удалить экземпляр?")){
+                apiRequest('./api/inventory.php/'+inventoryId,'DELETE').then(data =>{
+                if(data.error==0) {
+                        this.openBookFrom(this.book.bookId);
+                    }else{
+                        console.log(data.content)
+                    }
+                }).catch(err => {
+                    console.log('Fetch Error', err);
+                });
+            }
+        }
     }
 });
 
@@ -155,15 +196,17 @@ var usersForm = new Vue({
             }); 
         },
         deleteUser:function(userId) {
-            apiRequest('./api/user.php/'+userId,'DELETE').then(data =>{
-            if(data.error==0) {
-                    this.openFrom();
-                }else{
-                    console.log(data.content)
-                }
-            }).catch(err => {
-                console.log('Fetch Error', err);
-            }); 
+            if(confirm("Удалить пользователя?")){
+                apiRequest('./api/user.php/'+userId,'DELETE').then(data =>{
+                if(data.error==0) {
+                        this.openFrom();
+                    }else{
+                        console.log(data.content)
+                    }
+                }).catch(err => {
+                    console.log('Fetch Error', err);
+                }); 
+            }
         },        
         openUser:function(userId) {
             userForm.openForm(userId);       
@@ -261,17 +304,20 @@ var Books = new Vue({
             });
         },
         deleteBook:function (bookId) {
-            apiRequest('./api/book.php/'+bookId,'DELETE').then(data =>{
-                if(data.error==0) {
-                    this.load(this.creatorId);
-                }else{
-                    console.log(data.content)
-                }
-            }).catch(err => {
-                console.log('Fetch Error', err);
-            });
+            if(confirm("Удалить книгу?")){
+                alert()
+                apiRequest('./api/book.php/'+bookId,'DELETE').then(data =>{
+                    if(data.error==0) {
+                        this.load(this.creatorId);
+                    }else{
+                        console.log(data.content)
+                    }
+                }).catch(err => {
+                    console.log('Fetch Error', err);
+                });
+            }
+
         },
-        
         openBookFrom:function (bookId) {
             bookForm.openBookFrom(bookId);
         }
@@ -279,6 +325,49 @@ var Books = new Vue({
     
 })
 
+
+
+var handingОutForm = new Vue({
+    el: "#handingОutForm",
+    data: {
+        showWindow: false,
+        selectedUser: null,
+        users:{},
+        selectedDate: null,
+        inventoryId: null
+    },methods:{
+        openForm:function(inventoryId) {
+            apiRequest('./api/users.php/tree','GET').then(data =>{
+            if(data.error==0) {
+                    this.inventoryId = inventoryId;
+                    this.selectedDate = addDays(Date(),7);
+                    this.users=data.content;
+                    this.showWindow = true;
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            });             
+            this.showWindow = true;
+        },
+        saveBtn:function() {
+            this.passwordInvalide=false;
+            apiRequest('./api/inventory.php/'+this.inventoryId+'/out/','POST',{"selectedDate":this.selectedDate.getTime() / 1000,"selectedUser":this.selectedUser}).then(data =>{
+            if(data.error==0) {
+                    this.showWindow = false;
+                }else{
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                console.log('Fetch Error', err);
+            });
+        },        
+        closeBtn: function() {
+            this.showWindow = false;
+        }        
+    }
+});
 
 var errorWindow = new Vue({
     el: "#errorWindow",
@@ -295,9 +384,6 @@ var errorWindow = new Vue({
         }        
     }
 });
-
-
-
 
 //Функция для работы с апи. Возвращает Promise 
 function apiRequest(url,method='POST',jsonData=null){
@@ -337,3 +423,8 @@ function json(response) {
     return response.json()  
 }
 
+function addDays(date, days) {
+  var result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
