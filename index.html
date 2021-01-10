@@ -11,6 +11,8 @@
           @click="toggle">
           {{ item.name }}
           <span v-if="isFolder">[{{ isOpen ? '-' : '+' }}]</span>
+          <span v-if="!isFolder && loginForm.editCreator"> <img  @click="editEntry(item.id)"  src="img/edit.svg" height="16" alt="Редактировать"></span>
+          <span v-if="!isFolder && loginForm.editCreator"> <img  @click="deleteEntry(item.id)"src="img/trash-can_115312.svg" height="24"height="16" alt="Удалить"></span>
         </div>
         <ul v-show="isOpen" v-if="isFolder">
           <tree-item
@@ -45,34 +47,42 @@
 <body>
 <body>
     <div id="topPanel" class="topPanel">
-        Шапка
-        <button @click="openLoginFrom">Войти</button>
-        <button @click="openUsersForm">edit</button>
+        <div class="dropdown-menu">
+        <button @click="openLoginFrom">{{ loginForm.name}}</button>
+        <div class="dropdown-menu-content">
+            <a v-if="loginForm.userManagement" href="#" @click="openUsersForm">Редактировать пользователей</a>
+            <a v-if="loginForm.editDirectory" href="#" @click="opendirectoryEditor('genres')">Редактировать жанры</a>
+            <a v-if="loginForm.editDirectory" href="#" @click="opendirectoryEditor('types')">Редактировать типы изданий</a>
+            <a v-if="loginForm.editDirectory" href="#" @click="opendirectoryEditor('publishers')">Редактировать издателей</a>
+            <a v-if="loginForm.editDirectory" href="#" @click="opendirectoryEditor('languages')">Редактировать языки</a>
+            <a v-if="loginForm.isLogined" href="#" @click="logout()">Выйти</a>            
+        </div>
+        </div>
     </div>
-    <div class="leftPanel">
-        Левая панель
-        <ul id="creators">
+    <div id="creators" class="leftPanel">
+        <span v-if="loginForm.editCreator"><button  @click="editEntry(null)">Добавить автора</button></span>
+        <ul>
             <tree-item
                 class="item"
                 v-for="(child, index) in treeData"
                    :item="child"
             ></tree-item>
         </ul>
-        </div>
+    </div>
     <div class="searchPanel">
-        результат поиска
         <div id="books">
-            <div v-for="book in books" >
-                <p>
-                    <span @click="openBookFrom(book.bookId)"> {{ book.Title }} {{ book.LastName }} {{ book.FirstName }} {{ book.midleName }}</span>
-                    <img  @click="deleteBook(book.bookId)" src="img/trash-can_115312.svg" height="24" alt="Удалить">
+            <span v-if="loginForm.editBook && creatorId > 0"><button  @click="openBookFrom(null)">Добавить книгу</button></span>
+            <div v-for="book in books">
+                <p class="oneBookHeader">
+                    <span @click="openBookFrom(book.bookId)"> {{ book.Title }} {{ book.LastName }} {{ book.FirstName }} {{ book.midleName }} </span>
+                    <img  @click="openBookFrom(book.bookId)"  src="img/edit.svg" height="16" alt="Редактировать">
+                    <span v-if="loginForm.deleteBook"><img  @click="deleteBook(book.bookId)" src="img/trash-can_115312.svg" height="16" alt="Удалить"></span>
+                    <span v-if="loginForm.isLogined"><button @click="reserveBook(book.bookId)"> зарезервировать </button></span>
                 </p>
-                <p><span> {{ book.description }} </span></p>
+                <p class="oneBookBody"><span> {{ book.description }} </span></p>
             </div>
         </div>
     </div>
- 
-    
 
     <div id="loginForm" >
         <modal v-if="showLoginWindow" @close="showLoginWindow = false" addstyle="modal-container-login">
@@ -121,6 +131,8 @@
                 </option>
                </select>
             </p>
+            <p class="bookForm"><label>Год издания</label><input v-model="book.yearOfPublishing"></p>
+            <p class="bookForm"><label>Место издания</label><input v-model="book.PlaceOfPublication"></p>
             <p class="bookFormTreeselect"><label>Жанры</label><treeselect v-model="book.genres" :multiple="true" :options="Allgenres"  /></p>
             <p> 
                 <button  type="submit">Сохранить</button>
@@ -129,12 +141,26 @@
             </form>
             <div class="AviableBook">
             Добавить экземпляр <img  @click="addCopy()" src="img/gui_add_icon_157253.svg" height="16" alt="Добавить">
-            <p v-for="AviableBook in AviableBooks" >
-                {{AviableBook.inventoryId}} {{AviableBook.location}}  {{AviableBook.expireDate}} {{AviableBook.expireDate}} {{AviableBook.state}}
-                <img  @click="handingIn(AviableBook.inventoryId)"  src="img/box-in-icon_34483.png"  height="16" alt="Принять">
-                <img  @click="handingOut(AviableBook.inventoryId)" src="img/box-out-icon_34482.png" height="16" alt="Выдать">
-                <img  @click="deleteCopy(AviableBook.inventoryId)" src="img/trash-can_115312.svg"   height="16" alt="Удалить">
-            </p>
+            <table class="AviableBookTable">
+            <tr class="AviableBookTable">
+                <th class="AviableBookTable">Инвентарный номер</th>
+                <th class="AviableBookTable">Местонахождение</th>
+                <th class="AviableBookTable">Дата истечения</th>
+                <th class="AviableBookTable">Состояние</th>
+                <th class="AviableBookTable">Действия</th>                
+            </tr>
+            <tr  v-for="AviableBook in AviableBooks" class="AviableBookTable">
+                <td class="AviableBookTable">{{AviableBook.inventoryId}} </td>
+                <td class="AviableBookTable">{{AviableBook.location}}</td>
+                <td class="AviableBookTable">{{AviableBook.expireDate}} </td>
+                <td class="AviableBookTable">{{AviableBook.sateru}} </td>
+                <td class="AviableBookTable">
+                    <img  @click="handingIn(AviableBook.inventoryId)"  src="img/box-in-icon_34483.png"  height="16" alt="Принять">
+                    <img  @click="handingOut(AviableBook.inventoryId)" src="img/box-out-icon_34482.png" height="16" alt="Выдать">
+                    <img  @click="deleteCopy(AviableBook.inventoryId)" src="img/trash-can_115312.svg"   height="16" alt="Удалить">               
+                </td>
+            </tr>
+            <table>
             </div>
         </template>
     </modal>
@@ -204,6 +230,54 @@
         </template>
     </modal>   
    </div>   
+   <div id="directoryList" >
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-directoryList" >
+        <template v-slot:header>
+            <h3>Редактор справочника</h3>
+        </template>
+        <template v-slot:body>
+          <div class="directoryList">
+            <p v-for="element in data"  >
+              <span @click="openEntry(element.id)">{{ element.name }} </span>
+              <img  @click="deleteEntry(element.id)" src="img/trash-can_115312.svg" height="16" alt="Удалить">
+            </p>
+          </div>
+          <button  type="button" @click="CloseWindow">Закрыть</button>
+        </template>
+    </modal>   
+   </div>  
+    <div id="directoryEntry" >
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-directoryEntry" >
+        <template v-slot:header>
+            <h3>Редактор справочника</h3>
+        </template>
+        <template v-slot:body>
+            <form v-on:submit.prevent="saveBtn">
+            <p class="directoryEntryForm"><label>Название</label><input v-model="directory.name"></p>
+            <p> <button type="submit">Сохранить</button>
+                <button type="button"  @click="closeBtn">Звакрыть</button>
+            </p>
+            </form>
+        </template>
+    </modal>   
+   </div>
+   <div id="creatorFrom" >
+        <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-directoryEntry" >
+        <template v-slot:header>
+            <h3>Редактор справочника</h3>
+        </template>
+        <template v-slot:body>
+            <form v-on:submit.prevent="saveBtn">
+            <p class="directoryEntryForm"><label>Фамилия</label><input v-model="directory.LastName"></p>
+            <p class="directoryEntryForm"><label>Имя</label><input v-model="directory.FirstName"></p>
+            <p class="directoryEntryForm"><label>Отчество</label><input v-model="directory.midleName"></p>
+            <p> <button type="submit">Сохранить</button>
+                <button type="button"  @click="closeBtn">Звакрыть</button>
+            </p>
+            </form>
+        </template>
+    </modal>   
+   </div>      
    <div id="errorWindow" >
         <modal v-if="showWindow" @close="showWindow = false" addstyle="modal-container-error" >
         <template v-slot:header>
@@ -214,7 +288,7 @@
             <button  type="button" @click="CloseWindow">Закрыть</button>
         </template>
     </modal>   
-   <div>
+   </div>   
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script src="https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.umd.min.js"></script>
 <script src='https://unpkg.com/v-calendar'></script>

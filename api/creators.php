@@ -5,7 +5,7 @@ class CreatorsClass extends APIClass{
         function searchCreators($patern){
         try{
             $dbh = $this->dbh;
-            $stmt = $dbh->prepare("SELECT creatorId, LastName, FirstName, midleName FROM creators WHERE LastName LIKE  concat(:LastName,'%') ORDER BY LastName,FirstName");
+            $stmt = $dbh->prepare("SELECT creatorId, LastName, FirstName, midleName FROM creators WHERE LastName LIKE  concat(:LastName,'%') and deleted = 0 ORDER BY LastName,FirstName");
             $stmt->bindValue(':LastName', $patern, PDO::PARAM_STR);
             $stmt->execute();
             $data=[];

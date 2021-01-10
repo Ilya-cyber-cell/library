@@ -8,7 +8,7 @@ class BooksClass extends APIClass{
             $stmt = $dbh->prepare("SELECT bookId, Title, description, creators.LastName as LastName, creators.FirstName as FirstName , creators.midleName as midleName
                                    FROM books
                                    LEFT JOIN creators on creators.creatorId = books.creatorId
-                                   WHERE books.creatorId = :creatorId and deleted = 0");
+                                   WHERE books.creatorId = :creatorId and books.deleted = 0");
             $stmt->bindValue(':creatorId', $creatorId, PDO::PARAM_INT);
             $stmt->execute();
             $data=[];

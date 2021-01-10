@@ -3,6 +3,7 @@ require('./apiClass.php');
 class IventoryClass extends APIClass
 {
     public $bookId=NULL;
+    public $act=NULL;
     function addCopy(){
         $bookID = $this->bookId;
         $query = "INSERT INTO inventory(bookID,deleted)
@@ -21,7 +22,7 @@ class IventoryClass extends APIClass
         }
     }
     function deleteCopy($inventoryId){
-        $query = "UPDATE inventoryId SET deleted =1 WHERE inventoryId = :inventoryId)";
+        $query = "UPDATE inventoryId SET deleted = 1 WHERE inventoryId = :inventoryId";
         try{
             $dbh = $this->dbh;
             $stmt = $dbh->prepare($query);
@@ -39,8 +40,8 @@ class IventoryClass extends APIClass
             print ($this->toJson(1,"Вы не авторизованы"));
             die(0);
         }
-        $query = "INSERT INTO registery(date,expireDate,inventoryid,userId,location,state)
-                        VALUES(:date,:expireDate,:inventoryid,:userId,:location,:state)";
+        $query = "INSERT INTO registery(date,expireDate,inventoryid,userId,location,act,state)
+                        VALUES(:date,:expireDate,:inventoryid,:userId,:location,:act,:state)";
         try{
             $dbh = $this->dbh;
             $stmt = $dbh->prepare($query);
@@ -49,6 +50,7 @@ class IventoryClass extends APIClass
             $stmt->bindValue(':inventoryid', $inventoryid,PDO::PARAM_INT);
             $stmt->bindValue(':userId', $_SESSION['userId'],PDO::PARAM_INT);
             $stmt->bindValue(':location',$location,PDO::PARAM_INT);
+            $stmt->bindValue(':act', $this->act,PDO::PARAM_STR);
             $stmt->bindValue(':state', $state,PDO::PARAM_STR);
             $stmt->execute();
             $stmt=null;
@@ -76,7 +78,7 @@ switch ($method) {
     break;
   case 'DELETE':
     $inventory->checkRights("deleteBook");
-    print($inventory->deleteBook($request[0]));
+    print($inventory->deleteCopy($request[0]));
     break;     
   default:
     var_dump($request);  

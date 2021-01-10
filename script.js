@@ -16,26 +16,42 @@ Vue.component("tree-item", {
     },
     methods: {
         toggle: function() {
-        if (this.isFolder) {
-            if (this.isOpen){
-                this._props.item.children=[{"name":"Загрузка.."}];
+            if (this.isFolder) {
+                if (this.isOpen){
+                    this._props.item.children=[{"name":"Загрузка.."}];
+                } else{
+                    apiRequest('./api/creators.php/'+this._props.item.name,'GET').then(data =>{
+                        if(data.error==0) {
+                            this._props.item.children = data.content;
+                        }else{
+                            errorWindow.Show(data.content);
+                        }
+                    }).catch(err => {
+                        errorWindow.Show(err);
+                    });                
+                }
+                this.isOpen = !this.isOpen;
+                console.log(this)
             } else{
-                apiRequest('./api/creators.php/'+this._props.item.name,'GET').then(data =>{
-                    if(data.error==0) {
-                        this._props.item.children = data.content;
-                    }else{
-                        console.log(data.content)
+                Books.load(this._props.item.id);
+            }
+        },
+        editEntry:function(id){
+            creatorFrom.openForm(id);            
+        },
+        deleteEntry:function(id){
+            if(confirm("Удалить автора?")){
+                apiRequest('./api/creator.php/'+id,'DELETE').then(data =>{
+                if(data.error==0) {
+                        console.log(data.content);
+                }else{
+                        errorWindow.Show(data.content);
                     }
                 }).catch(err => {
-                    console.log('Fetch Error', err);
-                });                
-            }
-            this.isOpen = !this.isOpen;
-            console.log(this)
-        } else{
-            Books.load(this._props.item.id);
-        }
-        }
+                    errorWindow.Show(err);
+                });
+            }        
+        }        
     }
 });
 Vue.component("modal", {
@@ -44,25 +60,20 @@ Vue.component("modal", {
 });
 Vue.component('treeselect', VueTreeselect.Treeselect)
 
-var topPanel = new Vue({
-    el: "#topPanel",
-    methods:{
-        openLoginFrom:function() {
-            loginForm.openLoginFrom();
-        }, 
-        openUsersForm:function() {
-            usersForm.openFrom();
-        },
-    }
-    
-});
 
 var loginForm = new Vue({
     el: "#loginForm",
     data: {
         showLoginWindow: false,
         login: '',
-        password:''
+        password:'',
+        userManagement: false,
+        editBook:false,
+        editDirectory:false,
+        editCreator:false,
+        deleteBook:false,
+        isLogined:false,
+        name:"Вход в систему"
     },methods:{
         openLoginFrom:function() {
             this.showLoginWindow = true;
@@ -74,20 +85,107 @@ var loginForm = new Vue({
             this.password='';
             apiRequest('./api/user.php','POST',jsonData).then(data =>{
                 if(data.error==0) {
-                    errorWindow.Show(data.content);
                     console.log(data.content);
+                    this.setAccessToElement(data.content.rights);
+                    this.name = data.content.name;
                 }else{
-                    console.log(data.content)
+                    errorWindow.Show(data.content);
                 }
             }).catch(err => {
-                console.log('Fetch Error', err);
+                errorWindow.Show(err);
             }); 
         },
         closeBtn: function() {
             this.showLoginWindow = false;
-        }        
+        },
+        loadcurrentState: function(){
+             let jsonData = {"actons":"getCurentLogin"};
+              apiRequest('./api/user.php','POST',jsonData).then(data =>{
+                if(data.error==0) {
+                    console.log(data.content);
+                    if (data.content.rights != null){
+                        this.setAccessToElement(data.content.rights);
+                        this.name = data.content.name;
+                    }
+                }else{
+                    errorWindow.Show(data.content);
+                } 
+                  
+            }).catch(err => {
+                errorWindow.Show(err);
+            });           
+        },
+        logout:function(){
+            let jsonData = {"actons":"lodout"};
+            apiRequest('./api/user.php','POST',jsonData).then(data =>{
+                 if(data.error==0) {
+                    console.log(data.content);
+                    this.setAccessToElement([])
+                    loginForm.isLogined = false;
+                }else{
+                    errorWindow.Show(data.content);
+                } 
+                  
+            }).catch(err => {
+                errorWindow.Show(err);
+            });             
+        },
+        setAccessToElement: function (rights){
+            loginForm.userManagement = false;
+            loginForm.editBook = false;
+            loginForm.editDirectory = false;
+            loginForm.editCreator = false;
+            loginForm.deleteBook = false;
+            loginForm.isLogined = true;
+            loginForm.name = "Вход в систему";
+            rights.forEach(function ( element ) {
+                switch (element) {
+                case 'userManagement':
+                    loginForm.userManagement = true;
+                    break;
+                case 'editBook':
+                    loginForm.editBook =true;
+                    break;
+                case 'editDirectory':
+                    loginForm.editDirectory =true;
+                    break;
+                case 'editCreator':
+                    loginForm.editCreator = true;
+                    break;   
+                case 'deleteBook':
+                    loginForm.deleteBook = true;
+                    break;                     
+                }
+            })
+        }
+        
+        
+    },
+    created:function () {
+        this.loadcurrentState();
     }
 });
+
+var topPanel = new Vue({
+    el: "#topPanel",
+    methods:{
+        openLoginFrom:function() {
+            loginForm.openLoginFrom();
+        }, 
+        openUsersForm:function() {
+            usersForm.openFrom();
+        },
+        opendirectoryEditor:function(dir) {
+            directoryList.openFrom(dir);
+        },
+        logout:function() {
+            loginForm.logout();
+        },
+        
+    }
+    
+});
+
 
 var bookForm = new Vue({
     el: "#bookForm",
@@ -100,7 +198,7 @@ var bookForm = new Vue({
         AviableBooks:[],
         AllPublishers:[]
     },methods:{
-        openBookFrom:function(bookId) {
+        openBookFrom:function(bookId,creatorId=null) {
             apiRequest('./api/book.php/'+bookId,'GET').then(data =>{
             if(data.error==0) {
                     this.book=data.content.book;
@@ -110,6 +208,9 @@ var bookForm = new Vue({
                     this.AviableBooks = data.content.AviableBooks;
                     this.AllPublishers = data.content.AllPublishers;
                     this.showWindow = true;
+                    if(creatorId != null){
+                        this.book.creatorId = creatorId;
+                    }                    
                 }else{
                     console.log(data.content)
                 }
@@ -123,6 +224,7 @@ var bookForm = new Vue({
             apiRequest('./api/book.php/','PUT',this.book).then(data =>{
             if(data.error==0) {
                     this.showWindow = false;
+                    Books.load(this.book.creatorId);
                 }else{
                     console.log(data.content)
                 }
@@ -134,15 +236,18 @@ var bookForm = new Vue({
             this.showWindow = false;
         },
         addCopy:function() {
-            apiRequest('./api/inventory.php/','PUT',{"bookId":this.book.bookId}).then(data =>{
-            if(data.error==0) {
-                    this.openBookFrom(this.book.bookId);
-                }else{
-                    console.log(data.content)
-                }
-            }).catch(err => {
-                console.log('Fetch Error', err);
-            });
+            result = prompt('Введите номер акта', 'Номер акта');
+            if(result != null){
+                apiRequest('./api/inventory.php/','PUT',{"bookId":this.book.bookId,"act":result}).then(data =>{
+                if(data.error==0) {
+                        this.openBookFrom(this.book.bookId);
+                    }else{
+                        console.log(data.content)
+                    }
+                }).catch(err => {
+                    console.log('Fetch Error', err);
+                });
+            }
         },
         handingOut:function(inventoryId) {
             handingОutForm.openForm(inventoryId);
@@ -161,7 +266,8 @@ var bookForm = new Vue({
             }
         },       
         deleteCopy:function(inventoryId) {
-            if(confirm("Удалить экземпляр?")){
+            result = prompt('Введите номер акта', 'Номер акта');
+            if(result != null ){
                 apiRequest('./api/inventory.php/'+inventoryId,'DELETE').then(data =>{
                 if(data.error==0) {
                         this.openBookFrom(this.book.bookId);
@@ -262,7 +368,8 @@ var userForm = new Vue({
 var creators = new Vue({
     el: "#creators",
     data: {
-          treeData:   []
+          treeData:   [],
+          editCreator: false
     },
     methods: {
         loadAlphabet:function () {
@@ -278,6 +385,9 @@ var creators = new Vue({
             }).catch(err => {
                 console.log('Fetch Error', err);
             }); 
+        },
+        editEntry:function(id) {
+            creatorFrom.openForm(id);  
         }
     },
     created:function () {
@@ -305,21 +415,35 @@ var Books = new Vue({
         },
         deleteBook:function (bookId) {
             if(confirm("Удалить книгу?")){
-                alert()
                 apiRequest('./api/book.php/'+bookId,'DELETE').then(data =>{
                     if(data.error==0) {
                         this.load(this.creatorId);
                     }else{
-                        console.log(data.content)
+                        errorWindow.Show(data.content);
                     }
                 }).catch(err => {
-                    console.log('Fetch Error', err);
+                    errorWindow.Show(err);
+                    
                 });
             }
 
         },
+        reserveBook:function (bookId) {
+            if(confirm("Зарезервировать книгу?")){
+                apiRequest('./api/book.php/'+bookId+"/reserv/",'POST').then(data =>{
+                    if(data.error==0) {
+                        errorWindow.Show(data.content);
+                    }else{
+                        errorWindow.Show(data.content);
+                    }
+                }).catch(err => {
+                    errorWindow.Show(err);
+                });
+            }
+
+        },        
         openBookFrom:function (bookId) {
-            bookForm.openBookFrom(bookId);
+            bookForm.openBookFrom(bookId,this.creatorId);
         }
     }
     
@@ -355,6 +479,7 @@ var handingОutForm = new Vue({
             this.passwordInvalide=false;
             apiRequest('./api/inventory.php/'+this.inventoryId+'/out/','POST',{"selectedDate":this.selectedDate.getTime() / 1000,"selectedUser":this.selectedUser}).then(data =>{
             if(data.error==0) {
+                    bookForm.openBookFrom(bookForm.book.bookId);
                     this.showWindow = false;
                 }else{
                     console.log(data.content)
@@ -369,12 +494,140 @@ var handingОutForm = new Vue({
     }
 });
 
+
+var directoryList = new Vue({
+    el: "#directoryList",
+    data: {
+        showWindow: false,
+        data:{},
+        dir:""
+    },
+    methods:{
+        openFrom:function (dir) {
+            apiRequest('./api/directorylist.php/'+dir,'GET').then(data =>{
+                if(data.error==0) {
+                    this.dir = dir;
+                    this.data=data.content;
+                    this.showWindow = true;
+                }else{
+                    errorWindow.Show(data.content);
+                }
+            }).catch(err => {
+                errorWindow.Show(err);
+            });
+        },
+        openEntry:function(id) {
+            directoryEntry.openForm(id,this.dir);       
+        },        
+        deleteEntry: function(id){
+             if(confirm("Удалить?")){
+                alert()
+                apiRequest('./api/directory.php/'+this.dir+'/'+id,'DELETE').then(data =>{
+                    if(data.error==0) {
+                        this.openFrom(this.dir);
+                    }else{
+                        errorWindow.Show(data.content);
+                    }
+                }).catch(err => {
+                    errorWindow.Show(err);
+                });
+            }           
+        },
+        CloseWindow: function() {
+            this.showWindow = false;
+        }        
+    }
+});
+
+var directoryEntry = new Vue({
+    el: "#directoryEntry",
+    data: {
+        showWindow: false,
+        directory:{},
+        dir:""
+    },methods:{
+        openForm:function(id,dir) {
+            this.dir = dir;
+            apiRequest('./api/directory.php/'+this.dir+'/'+id,'GET').then(data =>{
+            if(data.error==0) {
+                    this.directory=data.content.directory;
+                    this.showWindow = true;
+                }else{
+                    errorWindow.Show(data.content);
+                    console.log(data.content)
+                }
+            }).catch(err => {
+                errorWindow.Show(err);
+            }); 
+        },
+        saveBtn:function() {           
+            apiRequest('./api/directory.php/'+this.dir+'/'+this.id,'PUT',this.directory).then(data =>{
+            if(data.error==0) {
+                    this.showWindow = false;
+                    directoryList.openFrom(this.dir);
+                }else{
+                    errorWindow.Show(data.content);
+                }
+            }).catch(err => {
+                errorWindow.Show(err);
+            });
+        },        
+        closeBtn: function() {
+            this.showWindow = false;
+        }        
+    }
+});
+var creatorFrom = new Vue({
+    el: "#creatorFrom",
+    data: {
+        showWindow: false,
+        directory:{},
+    },
+    methods:{
+        openForm:function(id){
+            if (id == null){
+                this.directory={};
+                this.showWindow = true;
+            }else{
+                this.loadData(id);
+            }
+        },
+        loadData:function(id) {
+            apiRequest('./api/creator.php/'+id,'GET').then(data =>{
+                if(data.error==0) {
+                    this.directory=data.content.directory;
+                    this.showWindow = true;
+                }else{
+                    errorWindow.Show(data.content);
+                }
+            }).catch(err => {
+                errorWindow.Show(err);
+            }); 
+        },
+        saveBtn:function() {           
+            apiRequest('./api/creator.php/'+this.id,'PUT',this.directory).then(data =>{
+            if(data.error==0) {
+                    this.showWindow = false;
+                }else{
+                    errorWindow.Show(data.content);
+                }
+            }).catch(err => {
+                errorWindow.Show(err);
+            });
+        },        
+        closeBtn: function() {
+            this.showWindow = false;
+        }        
+    }
+});
+
 var errorWindow = new Vue({
     el: "#errorWindow",
     data: {
         showWindow: false,
         text: ""
-    },methods:{
+    },
+    methods:{
         Show:function(message) {
             this.text = message;
             this.showWindow = true;
@@ -384,6 +637,7 @@ var errorWindow = new Vue({
         }        
     }
 });
+
 
 //Функция для работы с апи. Возвращает Promise 
 function apiRequest(url,method='POST',jsonData=null){
@@ -428,3 +682,4 @@ function addDays(date, days) {
   result.setDate(result.getDate() + days);
   return result;
 }
+

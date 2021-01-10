@@ -3,6 +3,7 @@ $dbUser='library';
 $dbPass='BRcBAxYnDFbxXxFh';
 $dbName='library';
 $dbHost='localhost';
+$dayForReserv = 7;
 
 try {
     $dbh = new PDO('mysql:host='.$dbHost.';dbname='.$dbName, $dbUser, $dbPass);

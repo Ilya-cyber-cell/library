@@ -5,8 +5,6 @@
     top:0px;
     right:0px;
     height:100px;
-    border-color: #e3ecff; 
-    border-style: solid;
     
 }
 .leftPanel{
@@ -18,12 +16,17 @@
     width:300px;
     overflow-y:scroll;
     overflow-x:hidden;
-    background:#f3f390;
-    float: left;
-    border-color: #e3ecff; 
-    border-style: solid;  
   
-    }
+}
+.leftPanel button {
+    background-color: #42b983;
+    color: white;
+    padding: 10px;
+    margin: 10px 30px;
+    font-size: 16px;
+    border: none;
+}    
+.leftPanel button:hover  {background-color: #3e8e41;}
 .searchPanel{
     position: absolute; 
     left:300px;
@@ -33,11 +36,38 @@
     overflow-y:scroll;
     overflow-x:hidden;
     background:#FFFFFF;
-    border-color: #e3ecff; 
-    border-style: solid;   
 }
-
-
+.searchPanel button {
+    background-color: #42b983;
+    color: white;
+    padding: 10px;
+    margin: 10px 30px;
+    font-size: 16px;
+    border: none;
+} 
+.searchPanel button:hover  {background-color: #3e8e41;}
+.oneBookHeader{
+    margin: 5px 20px 0px 20px;
+    padding:10px;
+    background:#ecffec;
+    border-width: 3px 3px 0px 3px;
+    border-color: #e3ecff; 
+    border-style: solid;
+}
+.oneBookHeader button {
+    background-color: #42b983;
+    color: white;
+    padding: 1px 10px;
+    margin: 0px 10px;
+    border: none;
+}
+.oneBookHeader button:hover  {background-color: #3e8e41;}
+.oneBookBody{
+    margin:0px 20px 30px 20px;
+    padding:10px;
+    border-color: #e3ecff; 
+    border-style: solid;
+}
 
 .FieldWithError{
      border-color: #e30000;
@@ -59,13 +89,33 @@
     width:340px;
     padding:0px;
 }
+
+.directoryEntryForm{
+    margin: auto;
+}
+
+.directoryEntryForm label{
+    text-align:left;
+    width:90px;
+    margin:0px;
+    float:left;
+    padding-top:15px;
+}
+.directoryEntryForm input{
+    width:240px;
+    height:30px;
+    margin-top:5px;
+    padding:0px;
+}
+
+
 .bookForm{
     margin: auto;
 }
 
 .bookForm label{
     text-align:left;
-    width:100px;
+    width:120px;
     margin-top:12px;
     float:left;
     padding:0px;
@@ -76,10 +126,12 @@
 .bookForm input{
     width:580px;
     padding:0px;
+    height:30px;
 }
 .bookForm select{
     width:596px;
     padding:0px;
+    height:30px;
 }
 .bookForm textarea{
     width:594px;
@@ -93,6 +145,18 @@
     overflow-y:scroll;
     overflow-x:hidden;
     max-height: 150px;
+}
+.directoryList{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    max-height: 550px;
+}
+.AviableBookTable{
+    border:1px;
+    border-style: solid;
+    padding:5px;
+    margin:5px;
+    border-collapse: collapse;
 }
 /*
  * Стили модального окна
@@ -136,13 +200,17 @@
   width: 450px;
 }
 .modal-container-book {
-  width: 700px;
+  width: 725px;
 }
 .modal-container-error {
   width: 350px;
 }
-
-
+.modal-container-directoryList {
+  width: 650px;
+}
+.modal-container-directoryEntry {
+  width: 350px;
+}
 .modal-header h3 {
   margin-top: 0;
   color: #42b983;
@@ -169,4 +237,45 @@
   -webkit-transform: scale(1.1);
   transform: scale(1.1);
 }
+
+
+
+
+.dropdown-menu button {
+    background-color: #42b983;
+    color: white;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+}
+
+.dropdown-menu {
+   position: absolute;
+   right:100px;
+   bottom: 30px;
+}
+
+.dropdown-menu-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 190px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-menu-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-menu-content a:hover {background-color: #ddd;}
+
+.dropdown-menu:hover .dropdown-menu-content {display: block;}
+
+.dropdown-menu button:hover  {background-color: #3e8e41;}
+
+
 

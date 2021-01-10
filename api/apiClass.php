@@ -92,5 +92,20 @@ class APIClass
     }
 
 }
+class directoryEditor extends APIClass{
+    function checkAllowTabel($tableName){
+        $notAccess = True;
+        $allowedTael = array('types','publishers','languages','genres');
+        foreach ($allowedTael as $item) {
+                if ( $item == $tableName){
+                    $notAccess = FALSE;
+                }
+        }
+        if ($notAccess){
+            print ($this->toJson(1,"нет доступа к справочнику $tableName"));
+            die(0);
+        }         
+    }
+}
 
 ?>

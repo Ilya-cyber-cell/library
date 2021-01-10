@@ -131,13 +131,19 @@ class UserClass extends APIClass
         if (password_verify($password, $this->passHash)) {
             $_SESSION['rights']=$this->rights;
             $_SESSION['userId']=$this->userId;
-            return $this->toJson(0,$this->rights);
+            $_SESSION['name']= $this->lastName." ".$this->firstName." ".$this->midleName ;
+            return $this->toJson(0, array("rights" => $_SESSION['rights'],"name" => $_SESSION['name']));
         } else {
             unset ($_SESSION['rights']);
             unset ($_SESSION['userId']);
+            unset ($_SESSION['name']);
             return $this->toJson(1,"Пароль неправильный.");
         }
     }
+    function logout(){
+           unset ($_SESSION['rights']);
+           unset ($_SESSION['userId']);
+    }    
     function getUser($param=""){
         $allRoles="";
         if ($param =="allRoles"){
@@ -172,6 +178,13 @@ case 'PUT':
     If($request->{'actons'} == 'login'){
         $user->loadFromBd($request->{'login'},0);
         print($user->checkPassword($request->{'password'}));  
+    }else if ($request->{'actons'} == 'getCurentLogin'){
+        print(json_encode(array("error" =>0,"content" =>  array("rights" => @$_SESSION['rights'],"name" => @$_SESSION['name'])))); 
+    }else{
+        unset ($_SESSION['rights']);
+        unset ($_SESSION['userId']);
+        unset ($_SESSION['name']);    
+        print(json_encode(array("error" =>0,"content" => "ok"))); 
     }
     break;
   case 'GET':
