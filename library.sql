@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost
--- Время создания: Дек 19 2020 г., 11:34
--- Версия сервера: 10.4.15-MariaDB
--- Версия PHP: 7.3.25
+-- Время создания: Фев 07 2021 г., 14:14
+-- Версия сервера: 10.5.8-MariaDB
+-- Версия PHP: 7.4.14
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- База данных: `library`
+-- База данных: `library3`
 --
 
 -- --------------------------------------------------------
@@ -33,10 +33,12 @@ CREATE TABLE `books` (
   `description` text NOT NULL,
   `creatorId` int(11) UNSIGNED NOT NULL,
   `publisherId` int(11) UNSIGNED DEFAULT NULL,
+  `yearOfPublishing` int(10) UNSIGNED NOT NULL,
+  `PlaceOfPublication` text DEFAULT NULL,
   `languageId` int(11) UNSIGNED DEFAULT NULL,
   `identifier` text DEFAULT NULL,
   `typeId` int(11) UNSIGNED DEFAULT NULL,
-  `deleted` tinyint(1) NOT NULL
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -49,7 +51,8 @@ CREATE TABLE `creators` (
   `creatorId` int(11) UNSIGNED NOT NULL,
   `LastName` text NOT NULL,
   `FirstName` text NOT NULL,
-  `midleName` text NOT NULL
+  `midleName` text NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -60,7 +63,8 @@ CREATE TABLE `creators` (
 
 CREATE TABLE `genres` (
   `id` int(11) UNSIGNED NOT NULL,
-  `name` text NOT NULL
+  `name` text NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -72,9 +76,7 @@ CREATE TABLE `genres` (
 CREATE TABLE `inventory` (
   `inventoryId` int(10) UNSIGNED NOT NULL,
   `bookID` int(10) UNSIGNED NOT NULL,
-  `state` enum('Выдана','Списана','Доступна','В резерве') NOT NULL,
-  `expireDate` date DEFAULT NULL,
-  `location` int(10) UNSIGNED DEFAULT NULL
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -96,8 +98,22 @@ CREATE TABLE `itemGenres` (
 
 CREATE TABLE `itemRights` (
   `roleId` int(11) UNSIGNED NOT NULL,
-  `rights` enum('Бронирование','Выдача','Списание','') NOT NULL
+  `rights` enum('userManagement','deleteBook','editBook','editDirectory','editCreator','report') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Дамп данных таблицы `itemRights`
+--
+
+INSERT INTO `itemRights` (`roleId`, `rights`) VALUES
+(1, 'userManagement'),
+(1, 'deleteBook'),
+(1, 'editBook'),
+(1, 'editCreator'),
+(1, 'editDirectory'),
+(1, 'report'),
+(2, 'editBook'),
+(3, 'userManagement');
 
 -- --------------------------------------------------------
 
@@ -107,8 +123,17 @@ CREATE TABLE `itemRights` (
 
 CREATE TABLE `languages` (
   `id` int(11) UNSIGNED NOT NULL,
-  `name` text NOT NULL
+  `name` text NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Дамп данных таблицы `languages`
+--
+
+INSERT INTO `languages` (`id`, `name`, `deleted`) VALUES
+(1, 'ru', 0),
+(2, 'en', 0);
 
 -- --------------------------------------------------------
 
@@ -118,7 +143,8 @@ CREATE TABLE `languages` (
 
 CREATE TABLE `publishers` (
   `id` int(11) UNSIGNED NOT NULL,
-  `name` text NOT NULL
+  `name` text NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -128,12 +154,14 @@ CREATE TABLE `publishers` (
 --
 
 CREATE TABLE `registery` (
-  `registeryid` int(11) NOT NULL,
-  `date` date NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `bookid` int(11) NOT NULL,
-  `userId` int(11) NOT NULL,
-  `registeryType` enum('Выдача','Списание','Возврат','Прием') NOT NULL
+  `registeryid` int(11) UNSIGNED NOT NULL,
+  `date` int(10) UNSIGNED NOT NULL,
+  `expireDate` int(10) UNSIGNED DEFAULT NULL,
+  `inventoryId` int(11) UNSIGNED NOT NULL,
+  `userId` int(11) UNSIGNED NOT NULL,
+  `location` int(10) UNSIGNED DEFAULT NULL,
+  `act` text DEFAULT NULL,
+  `state` enum('handedOut','reserved','available','decommissioned') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -147,6 +175,27 @@ CREATE TABLE `roles` (
   `name` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Дамп данных таблицы `roles`
+--
+
+INSERT INTO `roles` (`roleId`, `name`) VALUES
+(1, 'Все права'),
+(2, 'Выдача книг'),
+(3, 'Регистрация пользователей '),
+(4, 'Обычный пользователь ');
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `translation`
+--
+
+CREATE TABLE `translation` (
+  `en` text NOT NULL,
+  `ru` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 -- --------------------------------------------------------
 
 --
@@ -155,7 +204,8 @@ CREATE TABLE `roles` (
 
 CREATE TABLE `types` (
   `id` int(11) UNSIGNED NOT NULL,
-  `name` text NOT NULL
+  `name` text NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -172,7 +222,7 @@ CREATE TABLE `users` (
   `firstName` text NOT NULL,
   `midleName` text NOT NULL,
   `password` char(60) NOT NULL,
-  `deleted` tinyint(1) NOT NULL
+  `deleted` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -206,14 +256,14 @@ ALTER TABLE `genres`
 --
 ALTER TABLE `inventory`
   ADD PRIMARY KEY (`inventoryId`),
-  ADD KEY `inventory_books_fk` (`bookID`),
-  ADD KEY `inventory_users_fk` (`location`);
+  ADD KEY `inventory_books_fk` (`bookID`);
 
 --
 -- Индексы таблицы `itemGenres`
 --
 ALTER TABLE `itemGenres`
-  ADD KEY `itemGenres_books_fk` (`bookId`);
+  ADD KEY `itemGenres_books_fk` (`bookId`),
+  ADD KEY `itemGenres_Genres_fk` (`genresId`);
 
 --
 -- Индексы таблицы `itemRights`
@@ -237,13 +287,22 @@ ALTER TABLE `publishers`
 -- Индексы таблицы `registery`
 --
 ALTER TABLE `registery`
-  ADD PRIMARY KEY (`registeryid`);
+  ADD PRIMARY KEY (`registeryid`),
+  ADD KEY `registery_users_fk` (`userId`),
+  ADD KEY `registery_users_fk1` (`location`),
+  ADD KEY `registery_inventory_fk` (`inventoryId`);
 
 --
 -- Индексы таблицы `roles`
 --
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`roleId`);
+
+--
+-- Индексы таблицы `translation`
+--
+ALTER TABLE `translation`
+  ADD UNIQUE KEY `translation_en` (`en`) USING HASH;
 
 --
 -- Индексы таблицы `types`
@@ -291,7 +350,7 @@ ALTER TABLE `inventory`
 -- AUTO_INCREMENT для таблицы `languages`
 --
 ALTER TABLE `languages`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT для таблицы `publishers`
@@ -303,13 +362,13 @@ ALTER TABLE `publishers`
 -- AUTO_INCREMENT для таблицы `registery`
 --
 ALTER TABLE `registery`
-  MODIFY `registeryid` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `registeryid` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT для таблицы `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `roleId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `roleId` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT для таблицы `types`
@@ -340,13 +399,13 @@ ALTER TABLE `books`
 -- Ограничения внешнего ключа таблицы `inventory`
 --
 ALTER TABLE `inventory`
-  ADD CONSTRAINT `inventory_books_fk` FOREIGN KEY (`bookID`) REFERENCES `books` (`bookId`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `inventory_users_fk` FOREIGN KEY (`location`) REFERENCES `users` (`userId`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `inventory_books_fk` FOREIGN KEY (`bookID`) REFERENCES `books` (`bookId`) ON UPDATE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `itemGenres`
 --
 ALTER TABLE `itemGenres`
+  ADD CONSTRAINT `itemGenres_Genres_fk` FOREIGN KEY (`genresId`) REFERENCES `genres` (`id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `itemGenres_books_fk` FOREIGN KEY (`bookId`) REFERENCES `books` (`bookId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
@@ -354,6 +413,14 @@ ALTER TABLE `itemGenres`
 --
 ALTER TABLE `itemRights`
   ADD CONSTRAINT `itemRights` FOREIGN KEY (`roleId`) REFERENCES `roles` (`roleId`);
+
+--
+-- Ограничения внешнего ключа таблицы `registery`
+--
+ALTER TABLE `registery`
+  ADD CONSTRAINT `registery_inventory_fk` FOREIGN KEY (`inventoryId`) REFERENCES `inventory` (`inventoryId`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `registery_users_fk` FOREIGN KEY (`userId`) REFERENCES `users` (`userId`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `registery_users_fk1` FOREIGN KEY (`location`) REFERENCES `users` (`userId`) ON UPDATE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `users`
