@@ -1,0 +1,7 @@
+.reportTable{
+    border:1px;
+    border-style: solid;
+    padding:5px;
+    margin:5px;
+    border-collapse: collapse;
+}

@@ -32,14 +32,16 @@ class UserClass extends APIClass
             
             $sth->execute();
             $result = $sth->fetch(PDO::FETCH_ASSOC);
-            $this->userId=$result['userId']; 
-            $this->login=$result['login']; 
-            $this->lastName=$result['lastName']; 
-            $this->firstName=$result['firstName']; 
-            $this->midleName=$result['midleName']; 
-            $this->roleId=$result['roleId']; 
-            $this->roleName=$result['roleName']; 
-            $this->passHash=$result['password']; 
+            if ($result){
+                $this->userId=$result['userId']; 
+                $this->login=$result['login']; 
+                $this->lastName=$result['lastName']; 
+                $this->firstName=$result['firstName']; 
+                $this->midleName=$result['midleName']; 
+                $this->roleId=$result['roleId']; 
+                $this->roleName=$result['roleName']; 
+                $this->passHash=$result['password']; 
+            }
             $sth = null;
         } catch (PDOException $e) {
             return $this->toJson(1,$e->getMessage());

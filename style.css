@@ -89,6 +89,18 @@
     width:340px;
     padding:0px;
 }
+.userForm label{
+    text-align:left;
+    width:120px;
+    margin-top:3px;
+    float:left;
+    padding:0px;
+}
+.userForm input{
+    width:340px;
+    padding:0px;
+}
+
 
 .directoryEntryForm{
     margin: auto;
@@ -277,5 +289,5 @@
 
 .dropdown-menu button:hover  {background-color: #3e8e41;}
 
-
+.tree-menu-item:hover  {background-color: #f0f0f0;}
 

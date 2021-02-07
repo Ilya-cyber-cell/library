@@ -6,13 +6,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@riophae/vue-treeselect@^0.4.0/dist/vue-treeselect.min.css">
     <script type="text/x-template" id="item-template">
       <li>
-        <div
+        <div class="tree-menu-item"
           :class="{bold: isFolder}"
           @click="toggle">
           {{ item.name }}
           <span v-if="isFolder">[{{ isOpen ? '-' : '+' }}]</span>
-          <span v-if="!isFolder && loginForm.editCreator"> <img  @click="editEntry(item.id)"  src="img/edit.svg" height="16" alt="Редактировать"></span>
-          <span v-if="!isFolder && loginForm.editCreator"> <img  @click="deleteEntry(item.id)"src="img/trash-can_115312.svg" height="24"height="16" alt="Удалить"></span>
+          <span v-if="!isFolder && loginForm.editCreator"> <img  @click="editEntry(item.id)"  src="img/edit.svg" height="14" alt="Редактировать"></span>
+          <span v-if="!isFolder && loginForm.editCreator"> <img  @click="deleteEntry(item.id)"src="img/trash-can_115312.svg" height="14"  alt="Удалить"></span>
         </div>
         <ul v-show="isOpen" v-if="isFolder">
           <tree-item
@@ -55,6 +55,9 @@
             <a v-if="loginForm.editDirectory" href="#" @click="opendirectoryEditor('types')">Редактировать типы изданий</a>
             <a v-if="loginForm.editDirectory" href="#" @click="opendirectoryEditor('publishers')">Редактировать издателей</a>
             <a v-if="loginForm.editDirectory" href="#" @click="opendirectoryEditor('languages')">Редактировать языки</a>
+            <a v-if="loginForm.isLogined" href="/api/reports.php/mybook" target="_blank">Мои книги</a>
+            <a v-if="loginForm.report" href="/api/reports.php/overduebook" target="_blank">Просроченные книги</a>
+            <a v-if="loginForm.report" v-bind:href="'/api/reports.php/log/' + (new Date()/1000 - 2592000) +'/'+ new Date()/1000" target="_blank">Журнал приема выдачи книг</a>
             <a v-if="loginForm.isLogined" href="#" @click="logout()">Выйти</a>            
         </div>
         </div>
@@ -74,9 +77,9 @@
             <span v-if="loginForm.editBook && creatorId > 0"><button  @click="openBookFrom(null)">Добавить книгу</button></span>
             <div v-for="book in books">
                 <p class="oneBookHeader">
-                    <span @click="openBookFrom(book.bookId)"> {{ book.Title }} {{ book.LastName }} {{ book.FirstName }} {{ book.midleName }} </span>
-                    <img  @click="openBookFrom(book.bookId)"  src="img/edit.svg" height="16" alt="Редактировать">
-                    <span v-if="loginForm.deleteBook"><img  @click="deleteBook(book.bookId)" src="img/trash-can_115312.svg" height="16" alt="Удалить"></span>
+                    <span @click="openBookFrom(book.bookId)">{{ book.LastName }} {{ book.FirstName }} {{ book.midleName }} <br> {{ book.Title }} </span>
+                    <span v-if="loginForm.editBook"><img  @click="openBookFrom(book.bookId)"  src="img/edit.svg" height="14" alt="Редактировать"></span>
+                    <span v-if="loginForm.deleteBook"><img  @click="deleteBook(book.bookId)" src="img/trash-can_115312.svg" height="14" alt="Удалить"></span>
                     <span v-if="loginForm.isLogined"><button @click="reserveBook(book.bookId)"> зарезервировать </button></span>
                 </p>
                 <p class="oneBookBody"><span> {{ book.description }} </span></p>
@@ -172,8 +175,8 @@
         </template>
         <template v-slot:body>
             <button  @click="openUser(null)">Новый пользователь</button>
-            <div v-for="user in users" >
-                <p>
+            <div>
+                <p v-for="user in users">
                 <span @click="openUser(user.userid)"> {{ user.login }} {{ user.lastName }} {{ user.firstName }} {{ user.midleName }} {{ user.roleName }}</span>
                 <img  @click="deleteUser(user.userid)" src="img/trash-can_115312.svg" height="24" alt="Удалить">
                 </p>
@@ -199,8 +202,8 @@
                 </option>
                </select>
             </p>
-            <p class="userForm" v-bind:class="{ FieldWithError: passwordInvalide }"><label>Пароль</label><input v-model="user.password"></p>
-            <p class="userForm" v-bind:class="{ FieldWithError: passwordInvalide }"><label>Повтор пароля</label><input v-model="password"></p>
+            <p class="userForm" v-bind:class="{ FieldWithError: passwordInvalide }"><label>Пароль</label><input v-model="user.password" type="password"></p>
+            <p class="userForm" v-bind:class="{ FieldWithError: passwordInvalide }"><label>Повтор пароля</label><input v-model="password" type="password"></p>
             <p> 
                 <button  type="submit">Сохранить</button>
                 <button  type="button" @click="closeBtn">Отмена</button>

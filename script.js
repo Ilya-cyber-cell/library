@@ -73,6 +73,7 @@ var loginForm = new Vue({
         editCreator:false,
         deleteBook:false,
         isLogined:false,
+        report:false,
         name:"Вход в систему"
     },methods:{
         openLoginFrom:function() {
@@ -136,6 +137,7 @@ var loginForm = new Vue({
             loginForm.editDirectory = false;
             loginForm.editCreator = false;
             loginForm.deleteBook = false;
+            loginForm.report = false;
             loginForm.isLogined = true;
             loginForm.name = "Вход в систему";
             rights.forEach(function ( element ) {
@@ -154,6 +156,9 @@ var loginForm = new Vue({
                     break;   
                 case 'deleteBook':
                     loginForm.deleteBook = true;
+                    break;     
+                case 'report':
+                    loginForm.report = true;
                     break;                     
                 }
             })
@@ -343,7 +348,7 @@ var userForm = new Vue({
             }); 
         },
         saveBtn:function() {
-            if (this.password == this.user.password){    
+            if ((this.password == this.user.password) || (this.user.password == "") || (this.user.password == null)){    
                 this.passwordInvalide=false;
                
                 apiRequest('./api/user.php/'+this.user.userId,'PUT',this.user).then(data =>{
@@ -443,7 +448,9 @@ var Books = new Vue({
 
         },        
         openBookFrom:function (bookId) {
-            bookForm.openBookFrom(bookId,this.creatorId);
+            if (loginForm.editBook == true){
+                bookForm.openBookFrom(bookId,this.creatorId);
+            }
         }
     }
     
