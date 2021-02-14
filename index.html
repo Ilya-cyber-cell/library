@@ -178,7 +178,8 @@
             <div>
                 <p v-for="user in users">
                 <span @click="openUser(user.userid)"> {{ user.login }} {{ user.lastName }} {{ user.firstName }} {{ user.midleName }} {{ user.roleName }}</span>
-                <img  @click="deleteUser(user.userid)" src="img/trash-can_115312.svg" height="24" alt="Удалить">
+                <a v-if="loginForm.isLogined" v-bind:href="'/api/reports.php/userbook/' + user.userid" target="_blank"> <img src="img/report.svg" height="16" alt="Книги пользователя"></a>
+                <img  @click="deleteUser(user.userid)" src="img/trash-can_115312.svg" height="16" alt="Удалить">
                 </p>
                 <button  @click="showWindow = false">Закрыть</button>
             </div>
